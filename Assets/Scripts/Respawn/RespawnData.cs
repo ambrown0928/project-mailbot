@@ -9,6 +9,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Respawn Data Object", order = 1)]
 public class RespawnData : ScriptableObject
 {
+    public string location;
     public Vector3 points;
     // TODO Quest Board, 
 }

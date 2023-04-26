@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Editor;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -144,8 +144,19 @@ public class PlayerController : MonoBehaviour
     {
         if(ObjectCollidedHasRespawnTag(other.tag))
         {
-            respawnData = other.GetComponentInParent<RespawnPointController>().Data;
+            RespawnPointController controller = other.GetComponentInParent<RespawnPointController>();
+            respawnData = controller.Data;
+            controller.OpenRespawnWindow();
         }
+    }
+    private void OnTriggerExit(Collider other) 
+    {
+        if(ObjectCollidedHasRespawnTag(other.tag))
+        {
+            RespawnPointController controller = other.GetComponentInParent<RespawnPointController>();
+            respawnData = controller.Data;
+            controller.CloseRespawnWindow();
+        }    
     }
     #endregion
     
@@ -274,7 +285,7 @@ public class PlayerController : MonoBehaviour
     }
     void OnFire()
     {
-        stateController.SetState(deathState); // TODO remove later, for testing death mechanic 
+       // stateController.SetState(deathState); // TODO remove later, for testing death mechanic 
     }
     void OnDash()
     {
