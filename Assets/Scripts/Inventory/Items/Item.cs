@@ -2,17 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Item : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+/// 
+/// Class for storing item 
+/// 
 
-    // Update is called once per frame
-    void Update()
+
+namespace Inventory.Items
+{
+    [System.Serializable] [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Item", order = 1)]
+    public class Item : ScriptableObject
     {
-        
+        public Sprite icon;
+        public new string name;
+        public IType type;
+        public string description;
     }
 }
+
