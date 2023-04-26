@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Package : MonoBehaviour
+namespace Inventory.Items
 {
-    // Start is called before the first frame update
-    void Start()
+    public class Package : Item
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public List<Item> intendedItems; // items package is meant to have
+        public List<Item> currentItems;
     }
 }
