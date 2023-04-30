@@ -58,17 +58,44 @@ namespace Player.States
         
         public override void Action (Rigidbody body, GameObject inventoryWindow)
         {
+            body.velocity = new Vector3(0f, body.velocity.y, 0f);
             if(PlayerHasNotOpenedInventory())
             {
                 inventoryController = inventoryWindow.GetComponent<WindowController>();
                 inventoryController.Open();
-            }
-            
+            }   
         }
     
         private bool PlayerHasNotOpenedInventory()
         {
             return inventoryController == null;
+        }
+    }
+
+    public class TaskLogState : ExtraState
+    {
+        private WindowController taskLogController;
+    
+        public override void Enter () { }
+        public override void Exit () 
+        {
+            taskLogController.Close();
+            taskLogController = null;
+        }
+        
+        public override void Action (Rigidbody body, GameObject taskWindow)
+        {
+            body.velocity = new Vector3(0f, body.velocity.y, 0f);
+            if(PlayerHasNotOpenedTaskLog())
+            {
+                taskLogController = taskWindow.GetComponent<WindowController>();
+                taskLogController.Open();
+            }   
+        }
+    
+        private bool PlayerHasNotOpenedTaskLog()
+        {
+            return taskLogController == null;
         }
     }
 

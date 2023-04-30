@@ -18,19 +18,24 @@ namespace Inventory
         private Image itemIcon;
         private Item currentItem;
 
-        void Update() 
+        void Update()
         {
-            if(currentItem == null) return;
+            if (NoItemSelected()) return;
 
             itemName.text = currentItem.name;
             itemDescription.text = currentItem.description;
             itemIcon.sprite = currentItem.icon;
         }
+
+        private bool NoItemSelected()
+        {
+            return currentItem == null;
+        }
+
         public void DisplayItem(Item item)
         {
-            gameObject.SetActive(true);
             currentItem = item;
-            Debug.Log(currentItem);
+            gameObject.SetActive(true);
         }
         public void UndisplayItem()
         {

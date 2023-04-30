@@ -11,56 +11,58 @@ namespace Inventory
     public class ItemController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
     {
         #region Data Values
+
         [Header("Item Data")]
-            [SerializeField]
-            private Item itemData;
+            [SerializeField] private Item itemData;
             private float quantity = 1;
-            #endregion
-            [SerializeField]
-        private Image itemIcon;
-        
-        private Vector2 inventorySlot;
-        private GameObject potentialSlot;
-        private GameObject parent;
-        [SerializeField]
-        private GameObject windowGlobal;
-        [SerializeField]
-        private Text quantityField;
-        private RectTransform rectTransform;
-        private CanvasGroup canvasGroup;
+
+        #endregion
+        #region GameObject Values
+
+            private GameObject potentialSlot;
+            private GameObject parent;
+            [SerializeField] private GameObject windowGlobal;
+       
+        #endregion
+        #region UI Values
+
+        [Header("UI Fields")]
+            [SerializeField] private Image itemIcon;
+            [SerializeField] private Text quantityField;
+            private RectTransform rectTransform;
+            private CanvasGroup canvasGroup;
+
+        #endregion
 
         private bool dragged;
         private static bool selected;
 
         public InventoryController inventoryController;
-
+        
+        private Vector2 inventorySlot;
         public Vector2 InventorySlot { get => inventorySlot; set => inventorySlot = value; }
 
+        #region Unity Default Functions
+         
         void Awake()
         {
-
-            
             rectTransform = GetComponent<RectTransform>();
             canvasGroup = GetComponent<CanvasGroup>();
 
-            if (itemData == null) return;
-
+            if (itemData == null) return; // object created by code, initialize item will be called there
             InitializeItem();
         }
-
-        // Update is called once per frame
         void Update()
         {
             quantityField.text = "x" + quantity;
         }
         public void OnBeginDrag(PointerEventData eventData)
         {
-            rectTransform.SetParent(windowGlobal.transform);
+            rectTransform.SetParent(windowGlobal.transform); // deattach from the current panel
             dragged = true;
             selected = false;
-            canvasGroup.blocksRaycasts = false;
+            canvasGroup.blocksRaycasts = false; // item must not block raycasts while dragging so panels can interact w/ mouse
         }
-
         public void OnDrag(PointerEventData eventData)
         {
             rectTransform.position = Input.mousePosition;
@@ -81,29 +83,25 @@ namespace Inventory
                         AddQuantity(otherItem.quantity);
                         otherItem.DeleteItem();
 
-                        SwitchParent(potentialSlot.transform);
+                        SetParentAndResetPosition(potentialSlot.transform);
                         parent = potentialSlot;
                         potentialSlot = null;
+                        SaveItem();
                         return;
                     }
-                    SwitchParent(parent.transform);
+                    SetParentAndResetPosition(parent.transform);
                     return;
                 }
-                SwitchParent(potentialSlot.transform);
+                SetParentAndResetPosition(potentialSlot.transform);
                 parent = potentialSlot;
                 potentialSlot = null;
+                SaveItem();
             }
             else
             {
-                SwitchParent(parent.transform);
+                SetParentAndResetPosition(parent.transform);
             }
         }
-        public void SwitchParent(Transform newParent)
-        {
-            rectTransform.SetParent(newParent);
-            rectTransform.position = rectTransform.parent.transform.position;
-        }
-
         public void OnPointerClick(PointerEventData eventData)
         {
             if(selected && ItemIsCurrentlySelected()) 
@@ -112,51 +110,62 @@ namespace Inventory
             }
             else
             {
-                Select();
+               Select();
             }
         }
 
-        private bool ItemIsCurrentlySelected()
-        {
-            if(inventoryController.singleItemPanel.GetSelectedItem() == null) return false;
-            return itemData.name == inventoryController.singleItemPanel.GetSelectedItem().name;
-        }
+        #endregion
+        #region Extraneous GameObject Functions
 
+        public void SetParentAndResetPosition(Transform newParent)
+        {
+            rectTransform.SetParent(newParent);
+            rectTransform.position = rectTransform.parent.transform.position;
+        }
         private void Select()
         {
             selected = true;
-            inventoryController.singleItemPanel.DisplayItem(itemData);
+            inventoryController.SingleItemPanel.DisplayItem(itemData);
         }
         private void Unselect()
         {
             selected = false;
-            inventoryController.singleItemPanel.UndisplayItem();
+            inventoryController.SingleItemPanel.UndisplayItem();
         }
-
-        private bool ItemInSlotIsTheSame()
-        {
-            return potentialSlot.transform.GetChild(0).GetComponent<ItemController>().itemData.name == itemData.name;
-        }
-
-        private bool PlayerSlotIsFull()
-        {
-            return potentialSlot.transform.childCount > 0;
-        }
-
-        private bool PlayerHoveringOverNewSlot()
-        {
-            return potentialSlot != null;
-        }
-
         public void ChangeSelectedItemPotentialSlot(GameObject potentialSlot)
         {
             if(!dragged) return;
             this.potentialSlot = potentialSlot;
         }
 
+        #endregion
+        #region Boolean / Check Functions
+
+        private bool ItemIsCurrentlySelected()
+        {
+            if(inventoryController.SingleItemPanel.GetSelectedItem() == null) return false;
+            return itemData.name == inventoryController.SingleItemPanel.GetSelectedItem().name;
+        }
+        private bool ItemInSlotIsTheSame()
+        {
+            return potentialSlot.transform.GetChild(0).GetComponent<ItemController>().itemData.name == itemData.name;
+        }
+        private bool PlayerSlotIsFull()
+        {
+            return potentialSlot.transform.childCount > 0;
+        }
+        private bool PlayerHoveringOverNewSlot()
+        {
+            return potentialSlot != null;
+        }
+
+        #endregion
+        #region Item Management Functions
+
         public void AddQuantity(float add)
         {
             quantity += add;
+            SaveItem();
         }
         public void RemoveQuantity(float remove)
         {
@@ -164,38 +173,42 @@ namespace Inventory
             if(quantity <= 0 )
             {
                 DeleteItem();
+                return;
             }
+            SaveItem();
         }
-        
-
-        private void DeleteItem()
+        public void DeleteItem()
         {
             RemoveItem();
             Destroy(gameObject);
         }
-
         public void RemoveItem()
         {
-
+            // might be removed later, is here in case of extra functionality
         }
-
         private void InitializeItem()
-        {
+        { // for initializing the item's in-game attributes
             gameObject.name = itemData.name;
-            parent = rectTransform.parent.gameObject;
+            parent = rectTransform.parent.gameObject; // object is attached to slot either by default or thru inventory controller
 
             itemIcon.sprite = itemData.icon;
             selected = false;
         }
         public void LoadItem(ItemSaveData data)
-        {
+        { // called from Inventory Controller
             itemData = data.ItemData;
             inventorySlot = data.InventorySlot;
             quantity = data.Quantity;
 
             InitializeItem();
         }
+        public void SaveItem()
+        { // sends data to inventory controller
+            ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, inventorySlot);
+            inventoryController.UpdateItemFromController(itemToSave);
+        }
 
+        #endregion
     }
 }
 

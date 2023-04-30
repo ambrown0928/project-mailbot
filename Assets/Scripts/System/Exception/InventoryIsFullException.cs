@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Inventory
+namespace System
 {
-    public interface IType 
+    public class InventoryIsFullException : Exception
     {
-        void Use();
-    }
-}
 
+    }
+    
+}

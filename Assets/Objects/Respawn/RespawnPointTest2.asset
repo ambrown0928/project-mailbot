@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2071aa9a9d087fa4c84410475d5e6fb0, type: 3}
-  m_Name: RespawnPointTest1
+  m_Name: RespawnPointTest2
   m_EditorClassIdentifier: 
-  location: Test 1
-  points: {x: 18.6, y: 2.27, z: 3.87}
+  location: Test Location 2
+  points: {x: 18.6, y: 2.27, z: 29.78}

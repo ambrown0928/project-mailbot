@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Player.States;
@@ -17,6 +18,8 @@ namespace Player
         private Rigidbody body;
         private Collider coll; // used for determining ground
         private StateController stateController;
+        private RespawnPointController currentController;
+        private PlayerInput playerInput;
         private Coroutine dashCoroutine;
         private Coroutine respawnCoroutine;
 
@@ -27,62 +30,50 @@ namespace Player
             private static JumpingState jumpingState = new JumpingState();
             private static DashingState dashingState = new DashingState();
             private static InventoryState inventoryState = new InventoryState();
+            private static TaskLogState taskLogState = new TaskLogState();
             private static DeathState deathState = new DeathState();
         #endregion
 
-        private Vector2 move;
-        private Vector2 look;
+            private Vector2 move;
+            private Vector2 look;
 
-        [SerializeField]
-        private float gravity;
+            [SerializeField] private float gravity;
 
         #region Ground Variables
         [Header("Ground Fields")]
-            [SerializeField]
-            private float sphereRadius;
-            [SerializeField]
-            private float groundOffset;
-            [SerializeField]
-            private LayerMask groundMask;
+            [SerializeField] private float sphereRadius;
+            [SerializeField] private float groundOffset;
+            [SerializeField] private LayerMask groundMask;
         #endregion
 
         #region  Rotation Variables
         [Header("Rotation Fields")]
-            [SerializeField]
-            private float rotationPower;
-            [SerializeField]
-            private float rotationSpeed;
+            [SerializeField] private float rotationPower;
+            [SerializeField] private float rotationSpeed;
         #endregion
 
         #region Game Object Variables
         [Header("Game Object Fields")]
-            [SerializeField] 
-            private GameObject followTarget;
-            [SerializeField]
-            private GameObject model;
-            [SerializeField]
-            private GameObject corpse;
-            [SerializeField]
-            private GameObject inventoryWindow;
+            [SerializeField] private GameObject followTarget;
+            [SerializeField] private GameObject model;
+            [SerializeField] private GameObject corpse;
+            [SerializeField] private GameObject inventoryWindow;
+            [SerializeField] private GameObject taskWindow;
         #endregion
 
         #region Hover Variables
         [Header("Hover Fields")]
-            public float length;
-            [Rename("Vehicle Length")]
-            public float traversalLength;
-            public float strength;
-            public float dampening;
-            [Rename("Ray Offset")]
-            public float rayOffset;
+            [SerializeField] private float length;
+            [SerializeField] private float traversalLength;
+            [SerializeField] private float strength;
+            [SerializeField] private float dampening;
+            [SerializeField] private float rayOffset;
             private float lastHitDistance;
         #endregion
 
         #region Respawn Variables
-            [SerializeField]
-            private RespawnData respawnData;
-            [SerializeField]
-            private float respawnTime;
+            [SerializeField] private RespawnData respawnData;
+            [SerializeField] private float respawnTime;
         #endregion
 
         #region Unity Functions
@@ -90,6 +81,7 @@ namespace Player
         {
             body = GetComponent<Rigidbody>();
             coll = GetComponent<Collider>();
+            playerInput = GetComponent<PlayerInput>();
             stateController = new StateController(idleState, body);
             Physics.gravity = new Vector3(0f, gravity, 0f);
         }
@@ -108,7 +100,7 @@ namespace Player
 
         private void MovementRotation()
         {
-            if(InventoryIsOpen()) return;
+            if(InventoryIsOpen() || TaskLogIsOpen()) return;
 
             // skip when dashing so player's dash is in the same direction as it is based off model.transform.forward
             if ( IsMoving() &&
@@ -125,7 +117,7 @@ namespace Player
 
         private void LookRotation()
         {
-            if(InventoryIsOpen()) return;
+            if(InventoryIsOpen() || TaskLogIsOpen()) return;
             
             followTarget.transform.rotation *= Quaternion.AngleAxis(look.x * rotationPower, Vector3.up);
             followTarget.transform.rotation *= Quaternion.AngleAxis(look.y * rotationPower, Vector3.right);
@@ -145,7 +137,7 @@ namespace Player
 
             followTarget.transform.localEulerAngles = angles;
 
-            if (move != Vector2.zero)
+            if (IsMoving())
             {
                 Quaternion y_rot = Quaternion.Euler(0,
                                                     followTarget.transform.rotation.eulerAngles.y,
@@ -160,18 +152,19 @@ namespace Player
         {
             if(ObjectCollidedHasRespawnTag(other.tag))
             {
-                RespawnPointController controller = other.GetComponentInParent<RespawnPointController>();
-                respawnData = controller.Data;
-                controller.OpenRespawnWindow();
+                currentController = other.GetComponentInParent<RespawnPointController>();
+                respawnData = currentController.Data;
             }
         }
         private void OnTriggerExit(Collider other) 
         {
             if(ObjectCollidedHasRespawnTag(other.tag))
             {
-                RespawnPointController controller = other.GetComponentInParent<RespawnPointController>();
-                respawnData = controller.Data;
-                controller.CloseRespawnWindow();
+                if(currentController.IsOpen())
+                {
+                    currentController.CloseRespawnWindow();
+                }
+                currentController = null;
             }    
         }
         #endregion
@@ -183,31 +176,30 @@ namespace Player
          */
         void ManageStates()
         {
-            if (PlayerIsDashing()  || InventoryIsOpen()) return;
+            if (PlayerIsDashing()  || InventoryIsOpen() || TaskLogIsOpen()) return;
             stateController.CheckStateStack();
             switch (stateController.CurrentState)
             {
                 case IdleState:
                     stateController.RunCurrentState();
                     break;
-
                 case MovingState:
                     stateController.RunCurrentState(move);
                     break;
-
                 case TraversalState:
                     stateController.RunCurrentState(move);
                     break;
-
                 case DashingState:
                     dashCoroutine = StartCoroutine(Dash());
                     break;
-
                 case JumpingState:
                     stateController.RunCurrentState();
                     break;
                 case InventoryState:
                     stateController.RunCurrentState(inventoryWindow);
+                    break;
+                case TaskLogState:
+                    stateController.RunCurrentState(taskWindow);
                     break;
                 case DeathState:
                     respawnCoroutine = StartCoroutine(Respawn());
@@ -338,6 +330,34 @@ namespace Player
                 stateController.SetState(traversalState);
             }
         }
+        void OnActivate()
+        {
+            if(PlayerIsWithinRespawnPoint())
+            {
+                if(currentController.IsOpen())
+                {
+                    currentController.CloseRespawnWindow();
+                    return;
+                }
+                currentController.OpenRespawnWindow();
+            }
+        }
+        void OnTaskLog()
+        {
+            if(TaskLogIsOpen())
+            {
+                stateController.CheckStateStack();
+            }
+            else
+            {
+                stateController.SetState(taskLogState);
+            }
+        }
+
+        private bool PlayerIsWithinRespawnPoint()
+        {
+            return currentController != null;
+        }
         #endregion
 
         #region Boolean / Check Functions
@@ -368,7 +388,11 @@ namespace Player
         }
         private bool InventoryIsOpen()
         {
-            return inventoryWindow.activeInHierarchy == true;
+            return inventoryWindow.activeInHierarchy;
+        }
+        private bool TaskLogIsOpen()
+        {
+            return taskWindow.activeInHierarchy;
         }
         #endregion
 

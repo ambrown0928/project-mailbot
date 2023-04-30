@@ -16,6 +16,8 @@ namespace Inventory.Items
         public new string name;
         public IType type;
         public string description;
+
+        public void Use() { type.Use(); }
     }
 }
 

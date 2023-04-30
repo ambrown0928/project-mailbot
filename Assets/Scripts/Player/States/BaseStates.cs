@@ -107,4 +107,5 @@ namespace Player.States
             body.velocity += frictionDir;
         }
     }
+    
 }

@@ -23,11 +23,13 @@ namespace float_oat.Desktop90
         [SerializeField] private float CollapsedHeight = 32;
 
         private float ExpandedHeight;
-        private bool IsCollapsed = false;
+        private bool isCollapsed = false;
 
         private RectTransform RectTransform;
         private AudioSource AudioSource;
         private CanvasGroup CanvasGroup;
+
+        public bool IsCollapsed { get => isCollapsed; }
 
         void Awake()
         {
@@ -119,7 +121,7 @@ namespace float_oat.Desktop90
         /// </summary>
         public void Collapse()
         {
-            if (!IsCollapsed)
+            if (!isCollapsed)
             {
                 if (HideOnCollapse == null)
                 {
@@ -130,7 +132,7 @@ namespace float_oat.Desktop90
                 RectTransform.sizeDelta = new Vector2(RectTransform.sizeDelta.x, CollapsedHeight);
                 HideOnCollapse.gameObject.SetActive(false);
 
-                IsCollapsed = true;
+                isCollapsed = true;
             }
         }
 
@@ -139,12 +141,12 @@ namespace float_oat.Desktop90
         /// </summary>
         public void Expand()
         {
-            if (IsCollapsed)
+            if (isCollapsed)
             {
                 HideOnCollapse.gameObject.SetActive(true);
                 RectTransform.sizeDelta = new Vector2(RectTransform.sizeDelta.x, ExpandedHeight);
 
-                IsCollapsed = false;
+                isCollapsed = false;
             }
 
             BringToFront();
