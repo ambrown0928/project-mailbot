@@ -213,7 +213,12 @@ namespace Player
 
             stateController.RunCurrentState(model);
             yield return new WaitForSeconds(dashingState.dashTime);
+            stateController.RunCurrentState(model);
+            yield return new WaitForSeconds(dashingState.dashTime);
 
+            dashCoroutine = null;
+            stateController.CheckStateStack();
+            body.useGravity = true;
             dashCoroutine = null;
             stateController.CheckStateStack();
             body.useGravity = true;
@@ -236,6 +241,7 @@ namespace Player
             respawnCoroutine = null;
         }
         #endregion
+        
 
         #region Hover Functions
         /**
@@ -253,7 +259,6 @@ namespace Player
                                           transform.position.y + rayOffset, // offset to account for player's hovering
                                           transform.position.z);
             float hoverLength = (stateController.PlayerIsInState(typeof(TraversalState))) ? traversalLength : length;
-
             if (Physics.Raycast(ray_pos, transform.TransformDirection(-Vector3.up), out hit, hoverLength, groundMask))
             {
                 float force_amt = HooksLawDampen(hit.distance, hoverLength);
