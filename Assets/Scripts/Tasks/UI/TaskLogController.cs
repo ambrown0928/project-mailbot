@@ -52,7 +52,7 @@ namespace Tasks.UI
         private void CreateBlerb(Task task)
         {   
             GameObject newBlerb = Instantiate(taskBlerbPrefab);
-            newBlerb.transform.SetParent(taskBlerbContainer.transform);
+            newBlerb.transform.SetParent(taskBlerbContainer.transform, false);
             newBlerb.transform.SetAsFirstSibling();
 
             TaskBlerbController newBlerbController = newBlerb.GetComponent<TaskBlerbController>();

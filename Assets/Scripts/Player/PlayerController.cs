@@ -213,12 +213,7 @@ namespace Player
 
             stateController.RunCurrentState(model);
             yield return new WaitForSeconds(dashingState.dashTime);
-            stateController.RunCurrentState(model);
-            yield return new WaitForSeconds(dashingState.dashTime);
 
-            dashCoroutine = null;
-            stateController.CheckStateStack();
-            body.useGravity = true;
             dashCoroutine = null;
             stateController.CheckStateStack();
             body.useGravity = true;

@@ -15,7 +15,7 @@ namespace Inventory.Items
         public Sprite icon;
         public new string name;
         public IType type;
-        public string description;
+        [TextArea(3, 10)] public string description;
 
         public void Use() { type.Use(); }
     }
