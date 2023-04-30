@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Editor
+namespace UnityEditor
 {
      [CustomPropertyDrawer(typeof(RenameAttribute))]
     public class RenameEditor : PropertyDrawer
