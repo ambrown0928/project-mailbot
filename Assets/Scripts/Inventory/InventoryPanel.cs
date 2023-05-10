@@ -8,7 +8,7 @@ namespace Inventory
     public class InventoryPanel : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField]
-        private Vector2 coordinates;
+        public Vector2Int coordinates;
         private GameObject currentItem;
     
         public void OnPointerEnter(PointerEventData eventData)

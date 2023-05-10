@@ -16,7 +16,7 @@ namespace Inventory
         private Text itemDescription;
         [SerializeField]
         private Image itemIcon;
-        private Item currentItem;
+        public Item currentItem;
 
         void Update()
         {
@@ -45,6 +45,10 @@ namespace Inventory
         public Item GetSelectedItem()
         {
             return currentItem;
+        }
+        public void UseItem()
+        {
+            currentItem.Use();
         }
     }
 }

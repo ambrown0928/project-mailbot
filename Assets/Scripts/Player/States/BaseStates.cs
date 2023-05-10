@@ -107,5 +107,16 @@ namespace Player.States
             body.velocity += frictionDir;
         }
     }
+    public class DebugState : BaseState
+    {
+        public override void Enter() { Debug.Log("Entered Debug State"); }
+        public override void Exit() { Debug.Log("Exited Debug State"); }
+        
+        public override void Action(Rigidbody body)
+        {
+            base.Action(body);
+            body.velocity = new Vector3(0f, body.velocity.y, 0f);
+        }
+    }
     
 }

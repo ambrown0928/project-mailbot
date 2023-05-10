@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Inventory;
+using Inventory.Items;
 using UnityEngine;
 
 namespace Tasks
@@ -7,10 +9,11 @@ namespace Tasks
     [System.Serializable]
     public class TaskGoal
     {
-        public GoalType goalType;
         public int requiredAmount;
+        public GoalType goalType;
         public int currentAmount;
-        public string target;
+        public string target; // target npc to deliver to
+        public Item itemToDeliver;
     
         public bool CompareTarget(string target)
         {
@@ -20,37 +23,31 @@ namespace Tasks
         {
             return currentAmount >= requiredAmount;
         }
-        public void EnemyDisabled(string target)
+        
+        public bool CanCompleteDelivery(string target)
         {
-            if(CompareTarget(target) && GoalIsOfType(GoalType.Disable))
-            {
-                currentAmount++;
-            }
+            if(!GoalIsOfType(GoalType.Delivery)) return false;
+            if(this.target != target) return false;
+            
+            currentAmount += requiredAmount;
+            return true;
         }
-        public void DeliveryCompleted(string target)
+
+        public bool TalkedTo(string target)
         {
-            if(GoalIsOfType(GoalType.Delivery) && CompareTarget(target))
-            {
-                currentAmount = requiredAmount;
-            }
+            if(!GoalIsOfType(GoalType.Talk) || this.target != target) return false;
+            currentAmount++;
+            return true;
         }
-        public void ItemGathered(string target)
+
+        public bool GoalIsOfType(GoalType goalType)
         {
-            if(GoalIsOfType(GoalType.Gather) && CompareTarget(target))
-            {
-                currentAmount++;
-            }
-        }
-        private bool GoalIsOfType(GoalType type)
-        {
-            return goalType == type;
+            return this.goalType == goalType;
         }
     }
-    [System.Serializable]
     public enum GoalType
     {
         Delivery,
-        Gather,
-        Disable
+        Talk
     }
 }

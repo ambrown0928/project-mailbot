@@ -4,7 +4,7 @@ using float_oat.Desktop90;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Dialogue
+namespace Dialogues
 {
     public class DialogueWindowController : MonoBehaviour
     {
@@ -22,33 +22,46 @@ namespace Dialogue
         private bool goToNextSentence;
         private bool skipLoading;
 
-        public Dialogue CurrentDialogue { get => currentDialogue; set => currentDialogue = value; }
+        public DialogueReporter dialogueReporter;
+
+        public Dialogue CurrentDialogue 
+        { 
+            get => currentDialogue; 
+            set
+            {
+                currentDialogue = value;
+                if(currentDialogue == null)
+                {
+                    windowController.Close();
+                    return;
+                }
+                nPCName.text = currentDialogue.name;
+                if (SpeakingHasNotStarted()) 
+                {
+                    windowController.Open();
+                    currentDialogue.isDone = false;
+                    dialogueReporter.ReportDialogue(currentDialogue);
+                    speaking = StartCoroutine(LoadDialogue());
+                }
+            }
+        }
 
         private void Awake() 
         {
             windowController = GetComponent<WindowController>();
             windowController.Close();    
+            dialogueReporter = new DialogueReporter();
+            dialogueReporter.ReportDialogue(null);
         }
+
         private void Update()
         {
-            if (NoDialogue()) return;
 
-            nPCName.text = currentDialogue.name;
-            if (SpeakingHasNotStarted()) 
-            {
-                windowController.Open();
-                speaking = StartCoroutine(LoadDialogue());
-            }
         }
 
         private bool SpeakingHasNotStarted()
         {
             return speaking == null;
-        }
-
-        private bool NoDialogue()
-        {
-            return CurrentDialogue == null;
         }
 
         private IEnumerator LoadDialogue()
@@ -106,6 +119,15 @@ namespace Dialogue
         {
             goToNextSentence = true;
         }
-
+        public void CompleteDialogue()
+        {
+            goToNextSentence = true;
+            currentDialogue.isDone = true;
+            dialogueReporter.ReportDialogue(currentDialogue);
+        }
+        private void OnApplicationQuit() 
+        {
+            dialogueReporter.EndTransmission();
+        }
     }
 }

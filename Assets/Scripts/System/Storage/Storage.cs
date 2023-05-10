@@ -11,11 +11,15 @@ namespace System.Storage
     public class Storage<T>
     {
         
-        private T [,] storage;
+        [SerializeField] public List<List<T>> storage;
+        [SerializeField] public int width;
+        [SerializeField] public int length;
         
-        public Storage(T [,] storage) // loading constructor
+        public Storage(List<List<T>> storage, int width, int length) // loading constructor
         {
             this.storage = storage;
+            this.width = width;
+            this.length = length;
         }
 
         public Storage()
@@ -23,71 +27,100 @@ namespace System.Storage
 
         }
 
-        public Storage(int length, int width)
+        public Storage(int width, int length)
         {
-            storage = new T[length, width];
+            storage = new List<List<T>>();
+            this.width = width;
+            this.length = length;
+            for(int i = 0; i < width; i++)
+            {
+                storage.Add(new List<T>());
+                for(int j = 0; j < length; j++)
+                {
+                    storage[i].Add(default(T));
+                }
+            }
         }
 
-        public void InsertAt(T item, Vector2 slot)
+        public void InsertAt(T item, Vector2Int slot)
         {
             if ( SlotIsNotEmpty(slot) ) throw new System.InventorySlotOccupiedException();
-            storage[(int)slot.x, (int)slot.y] = item;
+            storage[slot.x][slot.y] = item;
         }
-        public T RemoveAt(Vector2 slot)
+        public T RemoveAt(Vector2Int slot)
         {
-            T item = storage[(int)slot.x, (int)slot.y];
+            T item = storage[slot.x][slot.y];
             if ( NoItemInLocation(item) ) return default(T);
-            storage[(int)slot.x, (int)slot.y] = default(T);
+            storage[(int)slot.x][(int)slot.y] = default(T);
             return item;
         }
         public T GetAt(Vector2 slot)
         {
-            T item = storage[(int)slot.x, (int)slot.y];
+            T item = storage[(int)slot.x][(int)slot.y];
             if ( NoItemInLocation(item) ) return default(T);
             return item;
         }
         public T GetItemSearch(T item)
         {
-            for(int i = 0; i > storage.Length; i++)
+            foreach(List<T> list in storage)
             {
-                for(int j = 0; j > storage.LongLength; j++)
+                foreach(T searchItem in list)
                 {
-                    if(storage[i, j].Equals(item))
+                    if( searchItem == null ) continue;
+                    if( searchItem.Equals(item) )
                     {
-                        return storage[i, j];
+                        return searchItem;
                     }
                 }
             }
             throw new ItemNotFoundException();
+        }
+        public List<T> GetAllItemsSearch(T item)
+        {
+            List<T> itemList = new List<T>();
+            foreach(List<T> list in storage)
+            {
+                foreach(T searchItem in list)
+                {
+                    if( searchItem == null ) continue;
+                    if( searchItem.Equals(item) )
+                    {
+                        itemList.Add(searchItem);
+                    }
+                }
+            }
+            if(itemList.Count == 0) throw new ItemNotFoundException();
+            return itemList;
         }
         private static bool NoItemInLocation(T item)
         {
             return item == null;
         }
 
-        private bool SlotIsNotEmpty(Vector2 slot)
+        private bool SlotIsNotEmpty(Vector2Int slot)
         {
-            return storage[(int)slot.x, (int)slot.y] != null;
+            return storage[(int)slot.x][(int)slot.y] != null;
         }
 
-        public Vector2 GetNextEmpty()
+        public Vector2Int GetNextEmpty()
         {
-            for(int i = 0; i > storage.Length; i++)
+            for(int i = 0; i < width; i++)
             {
-                for(int j = 0; j > storage.LongLength; j++)
+                for(int j = 0; j < length; j++)
                 {
-                    if(storage[i, j] == null)
+                    Debug.Log(storage[i][j]);
+                    if(Object.Equals(storage[i][j], default(T)) || Object.Equals(storage[i][j], null))
                     {
-                        return new Vector2(i, j);
+                        return new Vector2Int(i, j);
                     }
                 }
             }
             throw new InventoryIsFullException();
         }
-        public void UpdateItem(T item, Vector2 slot)
+        public void UpdateItem(T item, Vector2Int slot)
         {
             if(!SlotIsNotEmpty(slot)) throw new ItemNotFoundException();
-            storage[(int)slot.x, (int)slot.y] = item;
+            storage[slot.x][slot.y] = item;
         }
     }
 }
