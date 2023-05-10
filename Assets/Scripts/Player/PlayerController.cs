@@ -32,6 +32,7 @@ namespace Player
             private static InventoryState inventoryState = new InventoryState();
             private static TaskLogState taskLogState = new TaskLogState();
             private static DeathState deathState = new DeathState();
+            private static DebugState debugState = new DebugState();
         #endregion
 
             private Vector2 move;
@@ -176,7 +177,7 @@ namespace Player
          */
         void ManageStates()
         {
-            if (PlayerIsDashing()  || InventoryIsOpen() || TaskLogIsOpen()) return;
+            if (PlayerIsDashing()  || InventoryIsOpen() || TaskLogIsOpen() || PlayerIsInDebugState()) return;
             stateController.CheckStateStack();
             switch (stateController.CurrentState)
             {
@@ -204,6 +205,9 @@ namespace Player
                 case DeathState:
                     respawnCoroutine = StartCoroutine(Respawn());
                     break;
+                case DebugState:
+                    stateController.RunCurrentState();
+                    break;
             }
         }
         private IEnumerator Dash ()
@@ -213,12 +217,7 @@ namespace Player
 
             stateController.RunCurrentState(model);
             yield return new WaitForSeconds(dashingState.dashTime);
-            stateController.RunCurrentState(model);
-            yield return new WaitForSeconds(dashingState.dashTime);
 
-            dashCoroutine = null;
-            stateController.CheckStateStack();
-            body.useGravity = true;
             dashCoroutine = null;
             stateController.CheckStateStack();
             body.useGravity = true;
@@ -283,6 +282,7 @@ namespace Player
         #region Unity Input Functions
         void OnMove(InputValue val)
         {
+            if(PlayerIsInDebugState()) return;
             move = val.Get<Vector2>();
 
             if( stateController.PlayerIsInState( typeof(TraversalState)) ) return;
@@ -296,14 +296,17 @@ namespace Player
         }
         void OnLook(InputValue val)
         {
+            if(PlayerIsInDebugState()) return;
             look = val.Get<Vector2>();
         }
         void OnFire()
         {
+            if(PlayerIsInDebugState()) return;
            // stateController.SetState(deathState); // TODO remove later, for testing death mechanic 
         }
         void OnInventory()
         {
+            if(PlayerIsInDebugState()) return;
             if (InventoryIsOpen())
             {
                 stateController.CheckStateStack();
@@ -315,16 +318,19 @@ namespace Player
         }
         void OnDash()
         {
+            if(PlayerIsInDebugState()) return;
             if( !dashingState.canDash ) return;
             stateController.SetState(dashingState);
         }
         void OnJump()
         {
+            if(PlayerIsInDebugState()) return;
             if( !IsGrounded() ) return;
             stateController.SetState(jumpingState);
         }
         void OnTraversal()
         {
+            if(PlayerIsInDebugState()) return;
             if( stateController.PlayerIsInState(typeof(TraversalState)) )
             {
                 PlayerState state = ( !IsMoving() ) ? idleState : movingState;
@@ -337,6 +343,7 @@ namespace Player
         }
         void OnActivate()
         {
+            if(PlayerIsInDebugState()) return;
             if(PlayerIsWithinRespawnPoint())
             {
                 if(currentController.IsOpen())
@@ -349,6 +356,7 @@ namespace Player
         }
         void OnTaskLog()
         {
+            if(PlayerIsInDebugState()) return;
             if(TaskLogIsOpen())
             {
                 stateController.CheckStateStack();
@@ -357,6 +365,23 @@ namespace Player
             {
                 stateController.SetState(taskLogState);
             }
+        }
+        void OnToggleDebug()
+        {
+            if(PlayerIsInDebugState())
+            {
+                stateController.SetState(idleState);
+                stateController.CheckStateStack();
+            }
+            else
+            {
+                stateController.SetState(debugState);
+            }
+        }
+
+        private bool PlayerIsInDebugState()
+        {
+            return stateController.PlayerIsInState(typeof(DebugState));
         }
 
         private bool PlayerIsWithinRespawnPoint()

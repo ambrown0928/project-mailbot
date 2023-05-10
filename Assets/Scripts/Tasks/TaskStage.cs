@@ -9,7 +9,7 @@ namespace Tasks
     {
         public int id;
         public string name;
-        public string description;
+        [TextArea(3, 10)] public string description;
         public TaskGoal goal;
 
         public TaskStage()

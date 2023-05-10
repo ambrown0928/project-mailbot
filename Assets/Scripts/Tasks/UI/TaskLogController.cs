@@ -24,8 +24,10 @@ namespace Tasks.UI
         {
             database = TaskDatabaseAccess.CreateAndOpenDatabase();
             tasks = LoadTasks();
-            InitializeList();
             transform.parent.GetComponent<WindowController>().Close();
+
+            if(tasks.Count == 0) return;
+            InitializeList();
         }
 
         private void InitializeList()
@@ -34,10 +36,12 @@ namespace Tasks.UI
             Task lastTask = null;
             foreach(Task task in tasks)
             {
+                if(task == null) return;
                 if(task.Completed != showCompleted) continue;
                 CreateBlerb(task);
                 lastTask = task;
             }
+            if(lastTask == null) return;
             taskPanelController.HighlightedTask = lastTask;
         }
 
@@ -52,7 +56,7 @@ namespace Tasks.UI
         private void CreateBlerb(Task task)
         {   
             GameObject newBlerb = Instantiate(taskBlerbPrefab);
-            newBlerb.transform.SetParent(taskBlerbContainer.transform);
+            newBlerb.transform.SetParent(taskBlerbContainer.transform, false);
             newBlerb.transform.SetAsFirstSibling();
 
             TaskBlerbController newBlerbController = newBlerb.GetComponent<TaskBlerbController>();
@@ -72,6 +76,8 @@ namespace Tasks.UI
             insertTaskCommand.CommandText = "INSERT OR REPLACE INTO Tasks (id, taskName) VALUES (" 
                                         + (int)task.id + ", \"" + task.name + "\")";
             insertTaskCommand.ExecuteNonQuery();
+
+            tasks = LoadTasks();
         }
         public List<Task> LoadTasks()
         {

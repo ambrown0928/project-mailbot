@@ -12,12 +12,12 @@ namespace Inventory.Items
     [System.Serializable] [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Item", order = 1)]
     public class Item : ScriptableObject
     {
-        public Sprite icon;
+        public Sprite icon; 
         public new string name;
         public IType type;
-        public string description;
+        [TextArea(3, 10)] public string description;
 
-        public void Use() { type.Use(); }
+        public virtual void Use() { type.Use(); }
     }
 }
 

@@ -12,16 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d925739c87769048b645e7935f05d6a, type: 3}
   m_Name: The First Delivery
   m_EditorClassIdentifier: 
-  id: 3
+  id: 1
   taskStages:
   - id: 1
     name: To Mr. Johnson's
     description: Deliver the package to Mr. Johnson. Easy enough, right?
     goal:
-      goalType: 0
       requiredAmount: 1
-      currentAmount: 0
+      goalType: 0
+      currentAmount: 1
       target: Mr. Johnson
+      itemToDeliver: {fileID: 11400000, guid: 67b480d9440334149987411a3678c4f6, type: 2}
   currentTask: 0
   completed: 0
   isInLog: 1

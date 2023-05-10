@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Inventory.Items;
 using UnityEngine;
 
 namespace Tasks
@@ -12,46 +13,71 @@ namespace Tasks
         [SerializeField] private int currentTask = 0;
         [SerializeField] private bool completed;
         [SerializeField] private bool isInLog;
-        
-        public Task()
-        {
-        }
-
-        public Task(List<TaskStage> taskStages, int currentTask, bool completed, int id)
-        {
-            this.taskStages = taskStages;
-            CurrentTask = currentTask;
-            Completed = completed;
-            this.id = id;
-        }
 
         public int CurrentTask { get => currentTask; set => currentTask = value; }
         public bool Completed { get => completed; set => completed = value; }
         public List<TaskStage> TaskStages { get => taskStages; set => taskStages = value; }
         public bool IsInLog { get => isInLog; set => isInLog = value; }
 
+        void Awake()
+        {
+            
+        }
+
         public void NextStage()
         {
             if(completed) return;
 
             currentTask++;
-            if(currentTask >= taskStages.Count)
+            if(currentTask >= taskStages.Count) // stages are completed
             {
-                currentTask--;
+                Debug.Log("Completed Task");
                 completed = true;
+                currentTask = taskStages.Count - 1; // locks currentTask to max stage index
             }
         }
         public bool TaskIsReached()
         {
             return taskStages[currentTask].goal.IsReached();
         }
+        private bool CompleteTask(string target)
+        {
+            if(!IsInLog) return false;
+            if(Completed) return false;
+            if(TaskIsReached()) return false;
+
+            switch(GetCurrentStage().goal.goalType)
+            {
+                case GoalType.Delivery :
+                    return GetCurrentStage().goal.CanCompleteDelivery(target);
+                case GoalType.Talk :
+                    return GetCurrentStage().goal.TalkedTo(target);
+                default:
+                    return false;
+            }
+        }
+        public bool CheckTaskCompleted(string target)
+        {
+            if(!CompleteTask(target)) return false;
+            Debug.Log("Completed Task Goal");
+            NextStage();
+            return true;
+        }
         public TaskStage GetCurrentStage()
         {
             return taskStages[currentTask];
         }
-        public void PutTaskInLog()
+        public bool GoalIsOfType(GoalType goalType)
+        {
+            return GetCurrentStage().goal.GoalIsOfType(goalType);
+        }
+        public ItemSaveData PutTaskInLog()
         {
             isInLog = true;
+            if(GoalIsOfType(GoalType.Delivery)) return new ItemSaveData(GetCurrentStage().goal.itemToDeliver, 
+                                                                        GetCurrentStage().goal.requiredAmount,
+                                                                        new Vector2Int(0, 0)); // creates an item to deliver and sends to inventory
+            return null;
         }
     }
     

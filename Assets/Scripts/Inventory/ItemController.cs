@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Inventory.Items;
+using Loot;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,14 +15,13 @@ namespace Inventory
 
         [Header("Item Data")]
             [SerializeField] private Item itemData;
-            private float quantity = 1;
-
+            private int quantity = 1;
         #endregion
         #region GameObject Values
 
             private GameObject potentialSlot;
             private GameObject parent;
-            [SerializeField] private GameObject windowGlobal;
+            public GameObject windowGlobal;
        
         #endregion
         #region UI Values
@@ -39,8 +39,8 @@ namespace Inventory
 
         public InventoryController inventoryController;
         
-        private Vector2 inventorySlot;
-        public Vector2 InventorySlot { get => inventorySlot; set => inventorySlot = value; }
+        private Vector2Int inventorySlot;
+        public Vector2Int InventorySlot { get => inventorySlot; set => inventorySlot = value; }
 
         #region Unity Default Functions
          
@@ -55,6 +55,8 @@ namespace Inventory
         void Update()
         {
             quantityField.text = "x" + quantity;
+
+            HandlePackage();
         }
         public void OnBeginDrag(PointerEventData eventData)
         {
@@ -73,9 +75,10 @@ namespace Inventory
             Select();
             dragged = false;
             selected = true;
+
             if (PlayerHoveringOverNewSlot())
             {
-                if(PlayerSlotIsFull())
+                if(SlotIsFull())
                 {
                     if (ItemInSlotIsTheSame())
                     {
@@ -83,25 +86,53 @@ namespace Inventory
                         AddQuantity(otherItem.quantity);
                         otherItem.DeleteItem();
 
-                        SetParentAndResetPosition(potentialSlot.transform);
-                        parent = potentialSlot;
-                        potentialSlot = null;
-                        SaveItem();
+                        AddItemToNewSlot();
                         return;
                     }
                     SetParentAndResetPosition(parent.transform);
                     return;
                 }
-                SetParentAndResetPosition(potentialSlot.transform);
-                parent = potentialSlot;
-                potentialSlot = null;
-                SaveItem();
+                AddItemToNewSlot();
+                return;
             }
-            else
-            {
-                SetParentAndResetPosition(parent.transform);
-            }
+            
+            SetParentAndResetPosition(parent.transform);
+            
         }
+
+        private void AddItemToNewSlot()
+        {
+            if(potentialSlot.gameObject.tag == "Loot")
+            {
+                if (ItemIsPackage())
+                {
+                    SetParentAndResetPosition(parent.transform);
+                    return;
+                }
+                try
+                {
+                    GetQuantityToSendToLootWindow();
+                    return;
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogError(exception);
+                    SetParentAndResetPosition(parent.transform);
+                    return;
+                }
+            }
+            SwitchParentAndSetNewInventorySlot();
+            SetParentAndResetPosition(parent.transform);
+            
+            SaveItem();
+        }
+
+        private void SwitchParentAndSetNewInventorySlot()
+        {
+            parent = potentialSlot;
+            potentialSlot = null;
+        }
+
         public void OnPointerClick(PointerEventData eventData)
         {
             if(selected && ItemIsCurrentlySelected()) 
@@ -133,11 +164,11 @@ namespace Inventory
             inventoryController.SingleItemPanel.UndisplayItem();
         }
         public void ChangeSelectedItemPotentialSlot(GameObject potentialSlot)
-        {
+        { // called by InventoryPanel.cs
             if(!dragged) return;
             this.potentialSlot = potentialSlot;
         }
-
+        
         #endregion
         #region Boolean / Check Functions
 
@@ -148,30 +179,70 @@ namespace Inventory
         }
         private bool ItemInSlotIsTheSame()
         {
+            if(potentialSlot.tag == "Loot") return false;
             return potentialSlot.transform.GetChild(0).GetComponent<ItemController>().itemData.name == itemData.name;
         }
-        private bool PlayerSlotIsFull()
+        private bool SlotIsFull()
         {
+            if(potentialSlot.tag == "Loot") return false;
             return potentialSlot.transform.childCount > 0;
         }
         private bool PlayerHoveringOverNewSlot()
         {
             return potentialSlot != null;
         }
+        private bool ItemIsPackage()
+        {
+            return itemData.GetType() == typeof(Package);
+        }
 
         #endregion
         #region Item Management Functions
 
-        public void AddQuantity(float add)
+        private void GetQuantityToSendToLootWindow()
+        {
+            ItemSaveData itemToSend = new ItemSaveData(itemData, quantity, inventorySlot);
+            inventoryController.quantityWindowController.OpenWindow(itemToSend, this);
+            this.gameObject.SetActive(false);
+        }
+        public ItemSaveData SendItemToLootWindow(int quantity)
+        {
+            if(ItemIsPackage()) throw new CannotStorePackageInPackageException();
+            ItemSaveData itemToSend = new ItemSaveData(itemData, quantity, inventorySlot);
+            return itemToSend;
+        }
+        public void RecieveQuantityToSendToLootWindow(int quantityToRemove)
+        {
+            
+            SetParentAndResetPosition(parent.transform);
+            gameObject.SetActive(true);
+
+            if(quantityToRemove == 0) return;
+
+            RemoveQuantity(quantityToRemove);
+            potentialSlot.GetComponent<LootWindowController>().AddLootItem(SendItemToLootWindow(quantityToRemove));
+            SaveItem();
+            if(quantity <= 0)
+            {
+                Debug.Log("Deleting Item in send to loot window");
+                DeleteItem();
+                return;
+            }
+            potentialSlot = null;
+        }
+
+        public void AddQuantity(int add)
         {
             quantity += add;
             SaveItem();
         }
-        public void RemoveQuantity(float remove)
+        public void RemoveQuantity(int remove)
         {
             quantity -= remove;
-            if(quantity <= 0 )
+            if( quantity <= 0 )
             {
+                if(potentialSlot.tag == "Loot") return;
+                Debug.Log("Deleting Item in Remove Quantity");
                 DeleteItem();
                 return;
             }
@@ -179,33 +250,81 @@ namespace Inventory
         }
         public void DeleteItem()
         {
+            Debug.Log("Deleting Item");
             RemoveItem();
             Destroy(gameObject);
         }
         public void RemoveItem()
         {
-            // might be removed later, is here in case of extra functionality
+            quantity = 0;
+            SaveItem();
         }
         private void InitializeItem()
         { // for initializing the item's in-game attributes
             gameObject.name = itemData.name;
-            parent = rectTransform.parent.gameObject; // object is attached to slot either by default or thru inventory controller
-
             itemIcon.sprite = itemData.icon;
             selected = false;
+            
+            if(ItemIsPackage())
+            {
+                ((Package) itemData).lootWindowController = inventoryController.lootWindowController;
+                ((Package) itemData).lootObserver = new LootObserver();
+            }
         }
-        public void LoadItem(ItemSaveData data)
+        public void LoadItem(ItemSaveData data, GameObject parent)
         { // called from Inventory Controller
-            itemData = data.ItemData;
+            itemData = Resources.Load<Item>("Items/" + data.name);
             inventorySlot = data.InventorySlot;
             quantity = data.Quantity;
-
+            this.parent = parent;
             InitializeItem();
         }
         public void SaveItem()
         { // sends data to inventory controller
-            ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, inventorySlot);
-            inventoryController.UpdateItemFromController(itemToSave);
+            ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, inventorySlot); // sends data with old inventory slot
+            if(parent.tag != "Loot") InventorySlot = parent.GetComponent<InventoryPanel>().coordinates; // gets new inventory slot
+            try
+            {
+                inventoryController.UpdateItemFromController(itemToSave, InventorySlot);
+            }
+            catch (System.Exception exception)
+            {
+                if( exception.GetType() == typeof(System.ItemNotFoundException) )
+                {
+                    if(quantity == 0)
+                    {
+                        inventoryController.RemoveAt(inventorySlot);
+                        return;
+                    }
+                    inventoryController.AddItem(itemToSave);
+                }
+                throw;
+            }
+        }
+
+        #endregion
+        #region Package Code
+
+        private void HandlePackage()
+        {
+            if(!ItemIsPackage()) return;
+
+            Package package = (Package) itemData; // place to store package for easier coding
+
+            if(package.lootObserver.currentItem == null) return;
+
+            if(package.lootObserver.currentItem.Quantity == 0) 
+            {
+                // reset package to accept new item
+                package.currentItem = null;
+                package.lootObserver.currentItem = null; 
+            }
+            else
+            {
+                if(package.currentItem == null || package.currentItem.name == "" || package.currentItem.Quantity == 0)
+                    package.AddItem(package.lootObserver.currentItem);
+            }
+            itemData = package; // reset and save package;
         }
 
         #endregion

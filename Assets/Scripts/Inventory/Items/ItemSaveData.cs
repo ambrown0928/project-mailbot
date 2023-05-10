@@ -11,30 +11,49 @@ namespace Inventory.Items
     [System.Serializable]
     public class ItemSaveData
     {
-        private Item itemData;
-        private float quantity;
-        private Vector2 inventorySlot;
+        public string name;
+        [SerializeField] private int quantity;
+        [SerializeField] private Vector2Int inventorySlot;
 
-        public ItemSaveData(Item itemData, float quantity, Vector2 inventorySlot)
+        public ItemSaveData()
         {
-            this.itemData = itemData;
+        }
+
+        public ItemSaveData(Item itemData, int quantity, Vector2Int inventorySlot)
+        {
+            this.name = itemData.name;
             this.quantity = quantity;
             InventorySlot = inventorySlot;
         }
 
-        public Item ItemData { get => itemData; }
-        public float Quantity { get => quantity; set => quantity = value; }
-        public Vector2 InventorySlot { get => inventorySlot; set => inventorySlot = value; }
+        public ItemSaveData(string itemName, int quantity)
+        {
+            try
+            {
+                Item itemData = Resources.Load<Item>("Items/" + itemName);
+                this.name = itemData.name;
+                this.quantity = quantity;
+                InventorySlot = new Vector2Int(0, 0);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError(exception);
+                throw;
+            }
+        }
+
+        public int Quantity { get => quantity; set => quantity = value; }
+        public Vector2Int InventorySlot { get => inventorySlot; set => inventorySlot = value; }
 
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType()) return false;
-            return ((ItemSaveData)obj).ItemData.name == itemData.name; // only care that item is the same in name alone
+            return ((ItemSaveData)obj).name == name; // only care that item is the same in name alone
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(itemData, quantity, inventorySlot, ItemData, Quantity, InventorySlot);
+            return HashCode.Combine(name, quantity, inventorySlot, Quantity, InventorySlot);
         }
     }
 }
