@@ -35,6 +35,7 @@ namespace Dialogues
                     windowController.Close();
                     return;
                 }
+                
                 nPCName.text = currentDialogue.name;
                 if (SpeakingHasNotStarted()) 
                 {
@@ -54,10 +55,7 @@ namespace Dialogues
             dialogueReporter.ReportDialogue(null);
         }
 
-        private void Update()
-        {
-
-        }
+        private void Update(){ } // placeholder in case of later use
 
         private bool SpeakingHasNotStarted()
         {

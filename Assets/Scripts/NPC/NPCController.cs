@@ -49,8 +49,8 @@ namespace NPC
         }
         
         void OnActivate()
-        {
-            if(!withinPlayer) return;
+        { // TODO - better implement task giver / dialogue system
+            if(!withinPlayer) return; // stop if not within player
             
             bool taskWasProgressed = false;
             if( tags.Contains(NPCTags.TaskReciever) )
@@ -61,19 +61,13 @@ namespace NPC
             if( tags.Contains(NPCTags.Dialogue) ) 
             {
                 if(!taskWasProgressed) 
-                {
-                    if(dialogueObserver.CurrentDialogue != null)
-                    {
-                        Debug.Log(dialogueObserver.CurrentDialogue.isDone);
-                        Debug.Log(dialogueObserver.CurrentDialogue.name == nPCName);
-                        Debug.Log(dialogueObserver.CurrentDialogue.advanceToNextWhenDone);
-                    }
-
+                { 
+                    // if conditions are met, advance to the next dialogue stage.
                     if(dialogueObserver.CurrentDialogue != null
                     && dialogueObserver.CurrentDialogue.isDone 
                     && dialogueObserver.CurrentDialogue.name.Equals(nPCName)
-                    && dialogueObserver.CurrentDialogue.advanceToNextWhenDone)
-                        dialogueTrigger.IncreaseDialogueStage();
+                    && dialogueObserver.CurrentDialogue.advanceToNextWhenDone) dialogueTrigger.IncreaseDialogueStage(); 
+
                     dialogueTrigger.NextDialogue();
                 }
                 DialogueReporter dialogueReporter = dialogueTrigger.TriggerDialogue();

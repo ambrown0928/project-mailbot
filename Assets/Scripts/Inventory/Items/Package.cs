@@ -13,6 +13,7 @@ namespace Inventory.Items
         public LootWindowController lootWindowController;
         public ItemSaveData intendedItem; // items package is meant to have
         public ItemSaveData currentItem;
+        
         void Awake() 
         {
             lootObserver = new LootObserver();

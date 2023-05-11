@@ -14,7 +14,7 @@ namespace Inventory.Items
     {
         public Sprite icon; 
         public new string name;
-        public IType type;
+        public IType type; // TODO: Implement Types
         [TextArea(3, 10)] public string description;
 
         public virtual void Use() { type.Use(); }

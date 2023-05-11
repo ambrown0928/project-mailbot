@@ -12,10 +12,11 @@ namespace Inventory
     public class ItemController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
     {
         #region Data Values
-
         [Header("Item Data")]
+
             [SerializeField] private Item itemData;
             private int quantity = 1;
+
         #endregion
         #region GameObject Values
 
@@ -25,8 +26,8 @@ namespace Inventory
        
         #endregion
         #region UI Values
-
         [Header("UI Fields")]
+
             [SerializeField] private Image itemIcon;
             [SerializeField] private Text quantityField;
             private RectTransform rectTransform;
@@ -35,12 +36,11 @@ namespace Inventory
         #endregion
 
         private bool dragged;
-        private static bool selected;
-
-        public InventoryController inventoryController;
+        private static bool selected; // static so it stays the same across all items
         
         private Vector2Int inventorySlot;
         public Vector2Int InventorySlot { get => inventorySlot; set => inventorySlot = value; }
+        public InventoryController inventoryController;
 
         #region Unity Default Functions
          
@@ -102,10 +102,10 @@ namespace Inventory
 
         private void AddItemToNewSlot()
         {
-            if(potentialSlot.gameObject.tag == "Loot")
-            {
+            if (SlotIsLootWindow())
+            { // trying to add item to loot window
                 if (ItemIsPackage())
-                {
+                { // can't add package to loot window
                     SetParentAndResetPosition(parent.transform);
                     return;
                 }
@@ -123,7 +123,7 @@ namespace Inventory
             }
             SwitchParentAndSetNewInventorySlot();
             SetParentAndResetPosition(parent.transform);
-            
+
             SaveItem();
         }
 
@@ -171,7 +171,9 @@ namespace Inventory
         
         #endregion
         #region Boolean / Check Functions
-
+        /// 
+        /// Region for boolean functions
+        /// 
         private bool ItemIsCurrentlySelected()
         {
             if(inventoryController.SingleItemPanel.GetSelectedItem() == null) return false;
@@ -195,10 +197,18 @@ namespace Inventory
         {
             return itemData.GetType() == typeof(Package);
         }
+        private bool SlotIsLootWindow()
+        {
+            return potentialSlot.gameObject.tag == "Loot";
+        }
 
         #endregion
         #region Item Management Functions
-
+        /// 
+        /// Region for functions relating to the management of 
+        /// items. Includes quantity methods, sending the item
+        /// to the loot window, and save-load methods.
+        /// 
         private void GetQuantityToSendToLootWindow()
         {
             ItemSaveData itemToSend = new ItemSaveData(itemData, quantity, inventorySlot);
@@ -213,7 +223,7 @@ namespace Inventory
         }
         public void RecieveQuantityToSendToLootWindow(int quantityToRemove)
         {
-            
+            // reset object to parent in case item is still in inventory
             SetParentAndResetPosition(parent.transform);
             gameObject.SetActive(true);
 
@@ -222,15 +232,13 @@ namespace Inventory
             RemoveQuantity(quantityToRemove);
             potentialSlot.GetComponent<LootWindowController>().AddLootItem(SendItemToLootWindow(quantityToRemove));
             SaveItem();
+
             if(quantity <= 0)
             {
-                Debug.Log("Deleting Item in send to loot window");
                 DeleteItem();
-                return;
             }
             potentialSlot = null;
         }
-
         public void AddQuantity(int add)
         {
             quantity += add;
@@ -242,7 +250,6 @@ namespace Inventory
             if( quantity <= 0 )
             {
                 if(potentialSlot.tag == "Loot") return;
-                Debug.Log("Deleting Item in Remove Quantity");
                 DeleteItem();
                 return;
             }
@@ -250,7 +257,6 @@ namespace Inventory
         }
         public void DeleteItem()
         {
-            Debug.Log("Deleting Item");
             RemoveItem();
             Destroy(gameObject);
         }
@@ -292,11 +298,12 @@ namespace Inventory
                 if( exception.GetType() == typeof(System.ItemNotFoundException) )
                 {
                     if(quantity == 0)
-                    {
+                    { // double delete just in case
                         inventoryController.RemoveAt(inventorySlot);
                         return;
                     }
-                    inventoryController.AddItem(itemToSave);
+                    inventoryController.AddItem(itemToSave); // add item if it isn't there
+                    return;
                 }
                 throw;
             }

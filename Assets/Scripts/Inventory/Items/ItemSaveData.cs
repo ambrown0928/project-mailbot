@@ -15,6 +15,9 @@ namespace Inventory.Items
         [SerializeField] private int quantity;
         [SerializeField] private Vector2Int inventorySlot;
 
+        public int Quantity { get => quantity; set => quantity = value; }
+        public Vector2Int InventorySlot { get => inventorySlot; set => inventorySlot = value; }
+
         public ItemSaveData()
         {
         }
@@ -30,10 +33,10 @@ namespace Inventory.Items
         {
             try
             {
-                Item itemData = Resources.Load<Item>("Items/" + itemName);
+                Item itemData = Resources.Load<Item>("Items/" + itemName); // TODO - Replace with AssetBundle
                 this.name = itemData.name;
                 this.quantity = quantity;
-                InventorySlot = new Vector2Int(0, 0);
+                InventorySlot = new Vector2Int(0, 0); // empty slot
             }
             catch (System.Exception exception)
             {
@@ -41,9 +44,6 @@ namespace Inventory.Items
                 throw;
             }
         }
-
-        public int Quantity { get => quantity; set => quantity = value; }
-        public Vector2Int InventorySlot { get => inventorySlot; set => inventorySlot = value; }
 
         public override bool Equals(object obj)
         {

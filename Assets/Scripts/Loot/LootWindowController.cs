@@ -49,9 +49,9 @@ namespace Loot
         }
         public void OnPointerEnter(PointerEventData eventData)
         {
-            // checks
-            if (ItemNotBeingDragged(eventData)) return;
-            if(isPackage && currentItem != null) return;
+            // checks if item is being dragged and makes that the currentItem
+            if ( ItemNotBeingDragged(eventData) ) return;
+            if ( isPackage && currentItem != null ) return;
 
             currentItem = eventData.pointerDrag.gameObject;
             currentItem.GetComponent<ItemController>().ChangeSelectedItemPotentialSlot(gameObject);

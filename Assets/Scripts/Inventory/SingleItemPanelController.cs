@@ -8,15 +8,17 @@ namespace Inventory
 {
     public class SingleItemPanelController : MonoBehaviour
     {
-        [SerializeField]
-        private Text itemName;
-        [SerializeField]
-        private Text itemType;
-        [SerializeField]
-        private Text itemDescription;
-        [SerializeField]
-        private Image itemIcon;
         public Item currentItem;
+        
+        #region UI Fields
+        [Header("UI Fields")]
+
+            [SerializeField] private Text itemName;
+            [SerializeField] private Text itemType;
+            [SerializeField] private Text itemDescription;
+            [SerializeField] private Image itemIcon;
+            
+        #endregion
 
         void Update()
         {

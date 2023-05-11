@@ -9,13 +9,27 @@ namespace Loot
 {
     public class LootBlerbController : MonoBehaviour
     {
-        [SerializeField] private Text blerbName;
-        [SerializeField] private Text quantityField;
-        [SerializeField] private Image icon;
-        [SerializeField] private Item itemData;
-        [SerializeField] private int quantity;
-        [SerializeField] private InventoryController inventoryController;
-        [SerializeField] private LootWindowController lootWindowController;
+        #region UI Fields
+        [Header("UI Fields")]
+
+            [SerializeField] private Text blerbName;
+            [SerializeField] private Text quantityField;
+            [SerializeField] private Image icon;
+
+        #endregion
+        #region Item Data Fields
+        [Header("Item Data Fields")]
+
+            [SerializeField] private Item itemData;
+            [SerializeField] private int quantity;
+
+        #endregion
+        #region  Controller Fields
+
+            private InventoryController inventoryController;
+            private LootWindowController lootWindowController;
+
+        #endregion
 
         private LootReporter lootReporter;
 
@@ -36,14 +50,21 @@ namespace Loot
 
         public void Loot()
         {
-            ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, new Vector2Int(0, 0));
-            inventoryController.AddItem(itemToSave);
-            lootWindowController.RemoveLootItem(itemToSave);
-            Destroy(this.gameObject);
+            try
+            {
+                ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, new Vector2Int(0, 0));
+                inventoryController.AddItem(itemToSave);
+                lootWindowController.RemoveLootItem(itemToSave);
+                Destroy(this.gameObject);
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
         }
         public void LoadLoot(ItemSaveData itemToLoad)
         {
-            itemData = Resources.Load<Item>("Items/" + itemToLoad.name);
+            itemData = Resources.Load<Item>("Items/" + itemToLoad.name); // TODO - Replace with AssetBundle or other solution
             quantity = itemToLoad.Quantity;
             InitializeBlerb();
         }
