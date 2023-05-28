@@ -60,9 +60,7 @@ namespace Tasks.UI
             newBlerb.transform.SetAsFirstSibling();
 
             TaskBlerbController newBlerbController = newBlerb.GetComponent<TaskBlerbController>();
-            newBlerbController.Task = task;
-            newBlerbController.TaskLogController = this;
-            newBlerbController.InitializeBlerb();
+            newBlerbController.InitializeBlerb(this, task);
         }
         public void AddTask(Task task)
         {

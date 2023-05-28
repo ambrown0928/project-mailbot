@@ -12,9 +12,11 @@ namespace Tasks
     public class TaskReciever : MonoBehaviour
     {
         [SerializeField] private InventoryController inventoryController;
-        [SerializeField] private Task taskToRecieve;
+        [SerializeField] private Task taskToRecieve; // set per npc, task meant to be recieved
         public Dialogue recievedDialogue;
-
+        ///
+        /// Function for checking if a delivery can be completed
+        /// 
         public bool CheckIfDeliveryCanBeCompleted(string target)
         {
             if(taskToRecieve.Completed) return false;
@@ -32,7 +34,9 @@ namespace Tasks
                 return false;
             }
         }
-
+        /// 
+        /// Function for checking the progress of the task
+        /// 
         public bool ProgressTask(string target)
         {
             if(!taskToRecieve.GoalIsOfType(GoalType.Delivery)) 

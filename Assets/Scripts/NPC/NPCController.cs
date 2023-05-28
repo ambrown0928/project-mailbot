@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Dialogues;
+using NPC.ActionMenu;
 using Tasks;
 using UnityEngine;
 
@@ -15,8 +16,8 @@ namespace NPC
         private TaskReciever taskReciever;
         private TaskGiver taskGiver;
 
+        [SerializeField] private ActionMenuController actionMenuController;
         private DialogueObserver dialogueObserver;
-
         bool withinPlayer = false;
 
         void Awake()
@@ -25,6 +26,7 @@ namespace NPC
             taskReciever = GetComponent<TaskReciever>();
             taskGiver = GetComponent<TaskGiver>();
 
+            // setting tags 
             if(dialogueTrigger != null) 
             {
                 tags.Add(NPCTags.Dialogue);
@@ -35,51 +37,50 @@ namespace NPC
         }
         void OnTriggerEnter(Collider other) 
         {
-            if( other.tag == "Player" )
-            {
-                withinPlayer = true;
-            }
+            if( other.tag == "Player" ) withinPlayer = true;   
         }
-        private void OnTriggerExit(Collider other) 
+        void OnTriggerExit(Collider other) 
         {
-            if( other.tag == "Player" )
+            if( other.tag == "Player" ) 
             {
                 withinPlayer = false;
-            }    
+                actionMenuController.CloseWindow();
+            }  
         }
         
         void OnActivate()
         { // TODO - better implement task giver / dialogue system
-            if(!withinPlayer) return; // stop if not within player
-            
-            bool taskWasProgressed = false;
-            if( tags.Contains(NPCTags.TaskReciever) )
-            {    
-                taskWasProgressed = taskReciever.ProgressTask(nPCName); // result of progress task
-                if(taskWasProgressed) dialogueTrigger.nextDialogue = taskReciever.recievedDialogue;
-            }
-            if( tags.Contains(NPCTags.Dialogue) ) 
-            {
-                if(!taskWasProgressed) 
-                { 
-                    // if conditions are met, advance to the next dialogue stage.
-                    if(dialogueObserver.CurrentDialogue != null
-                    && dialogueObserver.CurrentDialogue.isDone 
-                    && dialogueObserver.CurrentDialogue.name.Equals(nPCName)
-                    && dialogueObserver.CurrentDialogue.advanceToNextWhenDone) dialogueTrigger.IncreaseDialogueStage(); 
+            if (!withinPlayer || GetActionMenuActiveInHierarchy()) return; // stop if not within player or action menu is opened
 
-                    dialogueTrigger.NextDialogue();
-                }
-                DialogueReporter dialogueReporter = dialogueTrigger.TriggerDialogue();
-                dialogueObserver.Subscribe(dialogueReporter);
-
-            }
-                
-            if( tags.Contains(NPCTags.TaskGiver) && dialogueObserver.CurrentDialogue.isDone
-                && dialogueObserver.CurrentDialogue.name == nPCName ) 
-                taskGiver.GiveTask();
+            actionMenuController.OpenWindow(this, this.gameObject);
+        }
+        private bool GetActionMenuActiveInHierarchy()
+        {
+            return actionMenuController.transform.parent.gameObject.activeInHierarchy;
         }
 
+        public void GiveTask()
+        {
+            taskGiver.GiveTask();
+        }
+        public void Talk()
+        {
+            // if conditions are met, advance to the next dialogue stage.
+            if (dialogueObserver.CurrentDialogue != null
+            && dialogueObserver.CurrentDialogue.isDone
+            && dialogueObserver.CurrentDialogue.name.Equals(nPCName)
+            && dialogueObserver.CurrentDialogue.advanceToNextWhenDone) dialogueTrigger.IncreaseDialogueStage();
+
+            dialogueTrigger.NextDialogue();
+
+            DialogueReporter dialogueReporter = dialogueTrigger.TriggerDialogue();
+            dialogueObserver.Subscribe(dialogueReporter);
+        }
+        public void RecieveTask()
+        {
+            bool taskWasProgressed = taskReciever.ProgressTask(nPCName); // result of progress task
+            if (taskWasProgressed) dialogueTrigger.nextDialogue = taskReciever.recievedDialogue;
+        }
     }
     public enum NPCTags
     {

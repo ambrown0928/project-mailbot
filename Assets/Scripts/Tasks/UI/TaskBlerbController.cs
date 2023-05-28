@@ -12,12 +12,11 @@ namespace Tasks.UI
         [SerializeField] private Task task;
         [SerializeField] private TaskLogController taskLogController;
 
-        public Task Task { get => task; set => task = value; }
-        public TaskLogController TaskLogController { get => taskLogController; set => taskLogController = value; }
-
-        public void InitializeBlerb()
+        public void InitializeBlerb(TaskLogController taskLogController, Task task)
         {
             blerbName.text = task.name;
+            this.task = task;
+            this.taskLogController = taskLogController;
         }
         private void Update() 
         {
@@ -25,7 +24,7 @@ namespace Tasks.UI
         }
         public void OnClick()
         {
-            TaskLogController.TaskPanelController.HighlightedTask = task;
+            taskLogController.TaskPanelController.HighlightedTask = task;
         }
         private bool IsHighlightedTask()
         {
