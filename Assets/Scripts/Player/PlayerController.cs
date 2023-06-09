@@ -379,6 +379,10 @@ namespace Player
             }
         }
 
+        
+        #endregion
+        #region Boolean / Check Functions
+
         private bool PlayerIsInDebugState()
         {
             return stateController.PlayerIsInState(typeof(DebugState));
@@ -388,10 +392,7 @@ namespace Player
         {
             return currentController != null;
         }
-        #endregion
-
-        #region Boolean / Check Functions
-        bool IsGrounded()
+        private bool IsGrounded()
         { 
             Vector3 ground_vector = new Vector3(coll.bounds.center.x, 
                                                 coll.bounds.center.y - groundOffset, // offset to account for player's hover
@@ -400,7 +401,7 @@ namespace Player
 
             return Physics.CheckSphere(ground_vector, sphereRadius, groundMask);
         }
-        bool IsMoving()
+        private bool IsMoving()
         {
             return (Mathf.Abs(move.magnitude) != 0);
         }

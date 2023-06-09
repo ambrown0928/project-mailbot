@@ -17,6 +17,7 @@ namespace NPC
         private TaskGiver taskGiver;
 
         [SerializeField] private ActionMenuController actionMenuController;
+        [SerializeField] private GameObject actionMenuOffset;
         private DialogueObserver dialogueObserver;
         bool withinPlayer = false;
 
@@ -34,6 +35,8 @@ namespace NPC
             }
             if(taskReciever != null) tags.Add(NPCTags.TaskReciever);
             if(taskGiver != null) tags.Add(NPCTags.TaskGiver);
+
+            dialogueTrigger.SetDialogueName(nPCName);
         }
         void OnTriggerEnter(Collider other) 
         {
@@ -47,12 +50,12 @@ namespace NPC
                 actionMenuController.CloseWindow();
             }  
         }
-        
+
         void OnActivate()
         { // TODO - better implement task giver / dialogue system
             if (!withinPlayer || GetActionMenuActiveInHierarchy()) return; // stop if not within player or action menu is opened
 
-            actionMenuController.OpenWindow(this, this.gameObject);
+            actionMenuController.OpenWindow(this, actionMenuOffset);
         }
         private bool GetActionMenuActiveInHierarchy()
         {

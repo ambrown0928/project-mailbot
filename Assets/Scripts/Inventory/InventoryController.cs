@@ -105,28 +105,21 @@ namespace Inventory
             storageFunctions.SaveToJson(inventoryStorage, FILE_PATH); // save storage after function is called to keep file updated
         }
         public void TakeItem(ItemSaveData item)
-        { 
-            try
-            { // break if item isn't in inventory / isn't enough to prevent taking item player doesn't have
-                ItemSaveData inventoryItem = inventoryStorage.GetItemSearch(item);
-
-                if(inventoryItem.Quantity < item.Quantity) throw new ItemQuantityRequestedLessThanStoredException();
-
-                inventoryItem.Quantity -= item.Quantity;
-                if(inventoryItem.Quantity == 0)
-                { // all of the item is taken
-                    RemoveAt(inventoryItem.InventorySlot); 
-                    GetRowColumnLiteral(inventoryItem.InventorySlot).GetComponentInChildren<ItemController>().DeleteItem();
-                }
-                else
-                { // only some of item is taken
-                    GetRowColumnLiteral(inventoryItem.InventorySlot).GetComponentInChildren<ItemController>().RemoveQuantity(item.Quantity);
-                    inventoryStorage.UpdateItem(inventoryItem, inventoryItem.InventorySlot);
-                }
+        {   
+            ItemSaveData inventoryItem = inventoryStorage.GetItemSearch(item);
+            if(inventoryItem.Quantity < item.Quantity) throw new ItemQuantityRequestedLessThanStoredException();
+            inventoryItem.Quantity -= item.Quantity;
+            
+            ItemController itemController = GetRowColumnLiteral(inventoryItem.InventorySlot).GetComponentInChildren<ItemController>();
+            if(inventoryItem.Quantity == 0)
+            { // all of the item is taken
+                RemoveAt(inventoryItem.InventorySlot); 
+                itemController.DeleteItem();
             }
-            catch (System.Exception)
-            {
-                throw;
+            else
+            { // only some of item is taken
+                itemController.RemoveQuantity(item.Quantity);
+                inventoryStorage.UpdateItem(inventoryItem, inventoryItem.InventorySlot);
             }
             storageFunctions.SaveToJson(inventoryStorage, FILE_PATH); // keep inventory updated
         }
@@ -150,37 +143,31 @@ namespace Inventory
         }
         public void UpdateItemFromController(ItemSaveData item, Vector2Int coords)
         { // called by item controller
-            try
+            List<ItemSaveData> updateItemList = inventoryStorage.GetAllItemsSearch(item);
+            ItemSaveData updateItem = null;
+            foreach(ItemSaveData items in updateItemList)
             {
-                List<ItemSaveData> updateItemList = inventoryStorage.GetAllItemsSearch(item);
-                ItemSaveData updateItem = null;
-                foreach(ItemSaveData items in updateItemList)
+                if(item.InventorySlot.Equals(items.InventorySlot))
                 {
-                    if(item.InventorySlot.Equals(items.InventorySlot))
-                    {
-                        updateItem = items;
-                        break;
-                    }
+                    updateItem = items;
+                    break;
                 }
-                updateItem.Quantity = item.Quantity;
-                if(updateItem.Quantity == 0)
-                { // remove item if new quantity is 0
-                    RemoveAt(updateItem.InventorySlot);
-                    return;
-                }
-                if(!updateItem.InventorySlot.Equals(coords))
-                { // switch slot if not in new slot
-                    RemoveAt(updateItem.InventorySlot); // remove at og slot to prevent duplicate
-                    updateItem.InventorySlot = coords;
-                    inventoryStorage.InsertAt(updateItem, updateItem.InventorySlot);
-                    return;
-                }
-                inventoryStorage.UpdateItem(updateItem, updateItem.InventorySlot);
             }
-            catch (System.Exception)
-            {
-                throw;
+            updateItem.Quantity = item.Quantity;
+            if(updateItem.Quantity == 0)
+            { // remove item if new quantity is 0
+                RemoveAt(updateItem.InventorySlot);
+                return;
             }
+            if(!updateItem.InventorySlot.Equals(coords))
+            { // switch slot if not in new slot
+                RemoveAt(updateItem.InventorySlot); // remove at og slot to prevent duplicate
+                updateItem.InventorySlot = coords;
+                inventoryStorage.InsertAt(updateItem, updateItem.InventorySlot);
+                return;
+            }
+            inventoryStorage.UpdateItem(updateItem, updateItem.InventorySlot);
+            
             storageFunctions.SaveToJson(inventoryStorage, FILE_PATH);
         }
 

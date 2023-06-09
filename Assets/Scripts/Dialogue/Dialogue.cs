@@ -10,7 +10,7 @@ namespace Dialogues
     [System.Serializable]
     public class Dialogue
     {
-        public string name;
+        [HideInInspector] public string name;
         public bool isDone = false;
         public bool advanceToNextWhenDone = false;
         [TextArea(3, 10)] public string[] sentences;

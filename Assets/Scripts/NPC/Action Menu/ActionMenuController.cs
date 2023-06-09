@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using float_oat.Desktop90;
+using Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -51,9 +52,11 @@ namespace NPC.ActionMenu
                         CreateActionButton("Talk", nPCController.Talk);
                         break;
                     case NPCTags.TaskReciever:
+                        // TODO: ADD SKIP FOR TASK NOT BEING ABLE TO BE TURNED IN
                         CreateActionButton("Turn in Task", nPCController.RecieveTask);
                         break;
                     case NPCTags.TaskGiver:
+                        // TODO: ADD SKIP FOR TASK ALREADY BEING ACCEPTED
                         CreateActionButton("Accept Task", nPCController.GiveTask);
                         break;
                 }

@@ -11,6 +11,13 @@ namespace Dialogues
         public int currentDialogue;
         [SerializeField] private DialogueWindowController dialogueWindowController;
 
+        public void SetDialogueName(string name)
+        {
+            foreach(Dialogue dialogue in dialogues)
+            {
+                dialogue.name = name;
+            }
+        }
         public DialogueReporter TriggerDialogue()
         {
             nextDialogue.isDone = false;
