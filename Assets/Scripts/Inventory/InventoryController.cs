@@ -77,7 +77,7 @@ namespace Inventory
             itemClone.transform.SetParent(itemContainer.transform);
 
             ItemBlerbController itemCloneController = itemClone.GetComponent<ItemBlerbController>();
-            itemCloneController.InitializeBlerb(item, Resources.Load<ItemPrototype>("Items/" + item.Name), this);
+            itemCloneController.InitializeBlerb(item, Resources.Load<ItemPrototype>("Items/" + item.Name), this, quantityWindowController, lootWindowController);
         }
         #endregion
         #region Inventory Management Methods
@@ -119,6 +119,7 @@ namespace Inventory
             if(takenItem.Quantity == 0)
             {
                 inventoryStorage.Delete(takenItem);
+                FindAndDeleteItemGameObject(takenItem);
                 return;
             }
             inventoryStorage.Update(takenItem);
@@ -137,9 +138,23 @@ namespace Inventory
         public void RemoveItem(Item item)
         {
             inventoryStorage.Delete(item);
+            FindAndDeleteItemGameObject(item);
             SaveInventory();
         }
-        
+        public void FindAndDeleteItemGameObject(Item item)
+        {
+            foreach(Transform child in itemContainer.transform)
+            {
+                ItemBlerbController childController = child.GetComponent<ItemBlerbController>();
+
+                if(childController.Item.Equals(item))
+                {
+                    Destroy(child.gameObject);
+                    return;
+                }
+            }
+            throw new ItemNotFoundException();
+        }
         #endregion
         
         private void SaveInventory()

@@ -14,7 +14,7 @@ namespace Inventory.Items
         public Item intendedItem; // items package is meant to have
         public Item currentItem;
         
-        void Awake() 
+        void OnEnable() 
         {
             lootObserver = new LootObserver();
         }
@@ -25,6 +25,7 @@ namespace Inventory.Items
         public void RemoveItem()
         {
             currentItem = null;
+            lootObserver.currentItem = null;
         }
         public void AddItem(Item item)
         {

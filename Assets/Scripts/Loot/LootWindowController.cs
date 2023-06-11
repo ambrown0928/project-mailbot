@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace Loot
 {
-    public class LootWindowController : MonoBehaviour, IPointerEnterHandler
+    public class LootWindowController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         #region Controller Fields
         [Header("Controller Fields")]
@@ -25,7 +25,7 @@ namespace Loot
 
             [SerializeField] private GameObject lootBlerbPrefab;
             [SerializeField] private GameObject lootListWindow;
-            [SerializeField] private GameObject currentItem;
+            [SerializeField] private GameObject currentItemHovering;
 
         #endregion
 
@@ -38,7 +38,7 @@ namespace Loot
             set 
             {
                 itemsToLoot = value;
-                NewLoot(itemsToLoot);
+                NewLoot();
             } 
         }
 
@@ -51,11 +51,18 @@ namespace Loot
         {
             // checks if item is being dragged and makes that the currentItem
             if ( ItemNotBeingDragged(eventData) ) return;
-            if ( isPackage && currentItem != null ) return;
+            if ( isPackage && ItemsToLoot.Count > 0 ) return;
+            if ( eventData.pointerDrag.gameObject == null ) return;
 
-            currentItem = eventData.pointerDrag.gameObject;
-
+            currentItemHovering = eventData.pointerDrag.gameObject;
+            currentItemHovering.GetComponent<ItemBlerbController>().EnterLootWindow(this);
         }
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if ( currentItemHovering == null ) return;
+            currentItemHovering.GetComponent<ItemBlerbController>().ExitLootWindow();
+        }
+
         private bool ItemNotBeingDragged(PointerEventData eventData)
         {
             return eventData.pointerDrag == null;
@@ -69,7 +76,6 @@ namespace Loot
         }
         public void RemoveLootItem(Item itemToRemove)
         {
-            currentItem = null; // removes current item so package can add new item
             itemsToLoot.Remove(itemToRemove);
             Item tempItemToPass = new Item(itemToRemove.Name, 0);
             lootReporter.RemoveItem(tempItemToPass);
@@ -90,6 +96,7 @@ namespace Loot
         public LootReporter OpenLootWindow(List<Item> loot, string title)
         { // called by auto-generating loot enemies
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
+
             isPackage = false;
             ItemsToLoot = loot;
 
@@ -102,12 +109,12 @@ namespace Loot
 
             isPackage = true;
             if(loot.Name == "" || loot.Quantity == 0) ItemsToLoot = new List<Item>(); // create an empty list if pkg is empty
-            else ItemsToLoot = new List<Item>{loot}; 
-            
+            else ItemsToLoot = new List<Item>{ loot }; 
+
             windowTitle.text = title;
             return lootReporter;
         }
-        public void NewLoot(List<Item> itemsToLoot)
+        public void NewLoot()
         {
             ResetList();
             windowController.Open();
@@ -127,8 +134,6 @@ namespace Loot
             newLootBlerb.transform.SetParent(lootListWindow.transform, false);
             newLootBlerb.transform.SetAsFirstSibling();
 
-            if(isPackage) currentItem = newLootBlerb;
-
             // setup loot blerb controller
             LootBlerbController newLootBlerbController = newLootBlerb.GetComponent<LootBlerbController>();
             newLootBlerbController.InventoryController = inventoryController;
@@ -145,5 +150,6 @@ namespace Loot
         {
             lootReporter.EndTransmission();
         }
+
     }
 }

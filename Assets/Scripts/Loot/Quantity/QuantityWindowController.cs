@@ -22,7 +22,7 @@ namespace Loot.Quantity
         #region Controllers
 
             private WindowController windowController;
-            // private ItemController currentItemController;
+            private ItemBlerbController currentItemBlerbController;
         
         #endregion
 
@@ -50,20 +50,20 @@ namespace Loot.Quantity
         #endregion
         #region Window Functions
 
-        public void OpenWindow(Item item)
+        public void OpenWindow(ItemBlerbController itemBlerbController, Item item, ItemPrototype itemPrototype)
         {
             maxValue = item.Quantity;
-            itemData = Resources.Load<ItemPrototype>("Items/" + item.Name); // TODO - Replace with AssetBundle / other solution
-            // currentItemController = itemController;
+            itemData = itemPrototype;
+            currentItemBlerbController = itemBlerbController;
 
             quantitySlider.maxValue = maxValue;
             windowController.Open();
         }
         public void CloseWindow()
         { // called when ok button is pressed
-            // currentItemController.RecieveQuantityToSendToLootWindow(currentValue);
-            // currentItemController = null;
-            // itemData = null;
+            currentItemBlerbController.SendToLootWindow(currentValue);
+            currentItemBlerbController = null;
+            itemData = null;
             windowController.Close();
         }
         
