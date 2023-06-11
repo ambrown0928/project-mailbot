@@ -71,12 +71,11 @@ namespace Tasks
         {
             return GetCurrentStage().goal.GoalIsOfType(goalType);
         }
-        public ItemSaveData PutTaskInLog()
+        public Item PutTaskInLog()
         {
             isInLog = true;
-            if(GoalIsOfType(GoalType.Delivery)) return new ItemSaveData(GetCurrentStage().goal.itemToDeliver, 
-                                                                        GetCurrentStage().goal.requiredAmount,
-                                                                        new Vector2Int(0, 0)); // creates an item to deliver and sends to inventory
+            if(GoalIsOfType(GoalType.Delivery)) return new Item(GetCurrentStage().goal.itemToDeliver, 
+                                                                        GetCurrentStage().goal.requiredAmount); // creates an item to deliver and sends to inventory
             return null;
         }
     }

@@ -14,6 +14,9 @@ namespace Tasks
         [SerializeField] private InventoryController inventoryController;
         [SerializeField] private Task taskToRecieve; // set per npc, task meant to be recieved
         public Dialogue recievedDialogue;
+
+        public Task TaskToRecieve { get => taskToRecieve; set => taskToRecieve = value; }
+
         ///
         /// Function for checking if a delivery can be completed
         /// 
@@ -23,8 +26,8 @@ namespace Tasks
             if(taskToRecieve.GetCurrentStage().goal.target != target) return false;
             try 
             {
-                ItemSaveData itemToTake = new ItemSaveData( taskToRecieve.GetCurrentStage().goal.itemToDeliver, 
-                                                            taskToRecieve.GetCurrentStage().goal.requiredAmount, new Vector2Int());
+                Item itemToTake = new Item( taskToRecieve.GetCurrentStage().goal.itemToDeliver, 
+                                                            taskToRecieve.GetCurrentStage().goal.requiredAmount);
                 inventoryController.TakeItem(itemToTake);
                 return taskToRecieve.CheckTaskCompleted(target);
             }

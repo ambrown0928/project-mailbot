@@ -19,9 +19,8 @@ namespace Inventory
         private const string FILE_PATH = "/Inventory/InventorySaveData.json";
 
         #region Storage
-        
-            [SerializeField] private Storage<ItemSaveData> inventoryStorage;
-            private InventorySaveLoad storageFunctions = new InventorySaveLoad(); // stores save/load functionality
+
+            private Storage<Item> inventoryStorage;
         
         #endregion
         #region External Component Fields
@@ -29,8 +28,8 @@ namespace Inventory
         /// 
         /// These variables are defined in the unity inspector
         /// 
-            [SerializeField] private RectTransform inventoryPanel;
             [SerializeField] private GameObject itemPrefab;
+            [SerializeField] private GameObject itemContainer;
             [SerializeField] internal LootWindowController lootWindowController;
             [SerializeField] internal QuantityWindowController quantityWindowController;
             [SerializeField] private SingleItemPanelController singleItemPanel;
@@ -45,150 +44,121 @@ namespace Inventory
         {
             try
             { // load inventory & items from inventory
-                inventoryStorage = storageFunctions.LoadFromJson(FILE_PATH);
-                if(inventoryStorage == null) inventoryStorage = new Storage<ItemSaveData>(5, 7); // create new inventory if nothing is loaded
-
-                foreach(List<ItemSaveData> xLists in inventoryStorage.storage)
-                { // loading each item from inventory storage
-                    foreach(ItemSaveData item in xLists)
-                    {
-                        if(item == null) continue;
-                        CreateItemOnInitialize(item);
-                    }
-                }
+                inventoryStorage = LoadInventory();
             }
             catch (System.Exception exception)
             { // if inventory load doesnt work, create new inventory and save
                 Debug.Log(exception);
-                inventoryStorage = new Storage<ItemSaveData>(5, 7);
-                storageFunctions.SaveToJson(inventoryStorage, FILE_PATH);
+                inventoryStorage = new Storage<Item>();
+                SaveInventory();
             }
+            InitializeItemBlerbs();
             inventoryWindowController.Close();
         }
         private void OnApplicationQuit() 
         {
-            storageFunctions.SaveToJson(inventoryStorage, FILE_PATH);
+            SaveInventory();
         }
 
+        private void InitializeItemBlerbs()
+        {
+            foreach(Transform child in itemContainer.transform)
+            {
+                Destroy(child.gameObject);
+            }
+            foreach(Item item in inventoryStorage.storage)
+            {
+                CreateBlerb(item);
+            }
+        }
+        private void CreateBlerb(Item item)
+        {
+            GameObject itemClone = Instantiate(itemPrefab);
+            itemClone.transform.SetParent(itemContainer.transform);
+
+            ItemBlerbController itemCloneController = itemClone.GetComponent<ItemBlerbController>();
+            itemCloneController.InitializeBlerb(item, Resources.Load<ItemPrototype>("Items/" + item.Name), this);
+        }
         #endregion
         #region Inventory Management Methods
 
-        public void RemoveAt(Vector2Int slot)
-        { // for removing quickly from inventoryStorage, called in ItemController
-            inventoryStorage.RemoveAt(slot);
-        }
-        public void AddItem(ItemSaveData item)
+        /// Methods for managing the inventory 
+        /// 
+        /// ! IMPORTANT NOTE ! 
+        /// ! For the functions where an object of the type "Item" is 
+        /// ! passed, these objects are often "requests" for items, and 
+        /// ! not a saved, real instance of an item. As such, the quantities
+        /// ! on these items are instead requests for that amount.
+
+        /// 
+        /// For adding a new item to the inventory storage. If the 
+        /// item already exists, add the quantity instead.
+        /// 
+        public void AddItem(Item item)
         {
-            if(item == null) return;
             try
-            { // check if item already exists & update quantity
-                ItemSaveData inventoryItem = inventoryStorage.GetItemSearch(item);
-                inventoryItem.Quantity += item.Quantity;
-                inventoryStorage.UpdateItem(inventoryItem, inventoryItem.InventorySlot);
-                // add item quantity to literal object in game
-                GetRowColumnLiteral(inventoryItem.InventorySlot).GetChild(0).GetComponent<ItemController>().AddQuantity(item.Quantity);
-            }
-            catch (System.ItemNotFoundException)
-            { // item isn't in inventory yet
-                try
-                { // try adding the item to inventory
-                    item.InventorySlot = inventoryStorage.GetNextEmpty();
-                    inventoryStorage.InsertAt(item, item.InventorySlot);
-                    CreateItemOnInitialize(item);
-                }
-                catch (System.InventoryIsFullException)
-                { // can't add item to inventory
-                    throw;
-                }
-            }
-
-            storageFunctions.SaveToJson(inventoryStorage, FILE_PATH); // save storage after function is called to keep file updated
-        }
-        public void TakeItem(ItemSaveData item)
-        {   
-            ItemSaveData inventoryItem = inventoryStorage.GetItemSearch(item);
-            if(inventoryItem.Quantity < item.Quantity) throw new ItemQuantityRequestedLessThanStoredException();
-            inventoryItem.Quantity -= item.Quantity;
-            
-            ItemController itemController = GetRowColumnLiteral(inventoryItem.InventorySlot).GetComponentInChildren<ItemController>();
-            if(inventoryItem.Quantity == 0)
-            { // all of the item is taken
-                RemoveAt(inventoryItem.InventorySlot); 
-                itemController.DeleteItem();
-            }
-            else
-            { // only some of item is taken
-                itemController.RemoveQuantity(item.Quantity);
-                inventoryStorage.UpdateItem(inventoryItem, inventoryItem.InventorySlot);
-            }
-            storageFunctions.SaveToJson(inventoryStorage, FILE_PATH); // keep inventory updated
-        }
-        public void TakeAllItem(ItemSaveData item)
-        { // takes all of a specific item in a specific slot
-            List<ItemSaveData> updateItemList = inventoryStorage.GetAllItemsSearch(item); // get list of items item could be
-            ItemSaveData updateItem = null;
-            
-            foreach(ItemSaveData items in updateItemList)
             {
-                if(item.InventorySlot.Equals(items.InventorySlot))
-                {
-                    updateItem = items;
-                    break;
-                }
+                inventoryStorage.Create(item);
+                CreateBlerb(inventoryStorage.Search(item)); // confirms its the inventory's item
             }
-            RemoveAt(updateItem.InventorySlot);
-            GetRowColumnLiteral(updateItem.InventorySlot).GetComponentInChildren<ItemController>().DeleteItem();
-
-            storageFunctions.SaveToJson(inventoryStorage, FILE_PATH); // keep inventory updated
+            catch (System.Exception exception)
+            { // item already exists, update instead
+                Debug.LogError(exception);
+                Item updateItem = inventoryStorage.Search(item);
+                updateItem.Quantity += item.Quantity;
+                inventoryStorage.Update(updateItem);
+            }
+            SaveInventory();
         }
-        public void UpdateItemFromController(ItemSaveData item, Vector2Int coords)
-        { // called by item controller
-            List<ItemSaveData> updateItemList = inventoryStorage.GetAllItemsSearch(item);
-            ItemSaveData updateItem = null;
-            foreach(ItemSaveData items in updateItemList)
+        public void TakeItem(Item item)
+        { 
+            Item takenItem = inventoryStorage.Search(item);
+            if(takenItem.Quantity < item.Quantity) throw new ItemQuantityRequestedLessThanStoredException();
+
+            takenItem.Quantity -= item.Quantity; // take an amount of the item
+            if(takenItem.Quantity == 0)
             {
-                if(item.InventorySlot.Equals(items.InventorySlot))
-                {
-                    updateItem = items;
-                    break;
-                }
-            }
-            updateItem.Quantity = item.Quantity;
-            if(updateItem.Quantity == 0)
-            { // remove item if new quantity is 0
-                RemoveAt(updateItem.InventorySlot);
+                inventoryStorage.Delete(takenItem);
                 return;
             }
-            if(!updateItem.InventorySlot.Equals(coords))
-            { // switch slot if not in new slot
-                RemoveAt(updateItem.InventorySlot); // remove at og slot to prevent duplicate
-                updateItem.InventorySlot = coords;
-                inventoryStorage.InsertAt(updateItem, updateItem.InventorySlot);
-                return;
-            }
-            inventoryStorage.UpdateItem(updateItem, updateItem.InventorySlot);
-            
-            storageFunctions.SaveToJson(inventoryStorage, FILE_PATH);
+            inventoryStorage.Update(takenItem);
+            SaveInventory();
         }
-
-        #endregion
-        #region Misc Functions
-
-        public void CreateItemOnInitialize(ItemSaveData item)
+        public int GetItemAmount(Item item)
         {
-            GameObject tempItem = Instantiate(itemPrefab);
+            Item itemToRead = inventoryStorage.Search(item);
 
-            ItemController tempItemController = tempItem.GetComponent<ItemController>();
-            tempItemController.SetParentAndResetPosition( GetRowColumnLiteral(item.InventorySlot) );   
-            tempItemController.inventoryController = this;
-            tempItemController.windowGlobal = this.gameObject; 
-            tempItemController.LoadItem(item, GetRowColumnLiteral(item.InventorySlot).gameObject);
+            return itemToRead.Quantity; 
         }
-        public Transform GetRowColumnLiteral(Vector2Int slot)
-        { // gets the row/column from the inventory ui
-            return inventoryPanel.GetChild(slot.y).GetChild(slot.x);
+        public Item GetItem(Item item)
+        {
+            return inventoryStorage.Search(item);
+        }
+        public void RemoveItem(Item item)
+        {
+            inventoryStorage.Delete(item);
+            SaveInventory();
         }
         
         #endregion
+        
+        private void SaveInventory()
+        {
+            SaveLoad<Storage<Item>>.SaveToJson(inventoryStorage, FILE_PATH);
+        }
+        private Storage<Item> LoadInventory()
+        {
+            return SaveLoad<Storage<Item>>.LoadFromJson(FILE_PATH);
+        }
+
+        public void Open()
+        {
+            InitializeItemBlerbs();
+            inventoryWindowController.Open();
+        }
+        public void Close()
+        {
+            inventoryWindowController.Close();
+        }
     }
 }

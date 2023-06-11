@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace Loot
 {
-    public class LootObserver : IObserver<ItemSaveData>
+    public class LootObserver : IObserver<Item>
     {
         private IDisposable unsubscriber;
-        public ItemSaveData currentItem;
+        public Item currentItem;
 
         public LootObserver() { }
 
-        public virtual void Subscribe(IObservable<ItemSaveData> provider)
+        public virtual void Subscribe(IObservable<Item> provider)
         {
            if (provider != null)
               unsubscriber = provider.Subscribe(this);
@@ -26,7 +26,7 @@ namespace Loot
 
         public virtual void OnError(Exception e) { }
 
-        public virtual void OnNext(ItemSaveData value)
+        public virtual void OnNext(Item value)
         {
             currentItem = value;
         }

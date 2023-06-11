@@ -6,16 +6,16 @@ using UnityEngine;
 
 namespace Loot
 {
-    public class LootReporter : IObservable<ItemSaveData>
+    public class LootReporter : IObservable<Item>
     {
         public LootReporter()
         {
-           observers = new List<IObserver<ItemSaveData>>();
+           observers = new List<IObserver<Item>>();
         }
 
-        private List<IObserver<ItemSaveData>> observers;
+        private List<IObserver<Item>> observers;
 
-        public IDisposable Subscribe(IObserver<ItemSaveData> observer)
+        public IDisposable Subscribe(IObserver<Item> observer)
         {
            if (! observers.Contains(observer))
               observers.Add(observer);
@@ -24,10 +24,10 @@ namespace Loot
 
         private class Unsubscriber : IDisposable
         {
-           private List<IObserver<ItemSaveData>>_observers;
-           private IObserver<ItemSaveData> _observer;
+           private List<IObserver<Item>>_observers;
+           private IObserver<Item> _observer;
 
-           public Unsubscriber(List<IObserver<ItemSaveData>> observers, IObserver<ItemSaveData> observer)
+           public Unsubscriber(List<IObserver<Item>> observers, IObserver<Item> observer)
            {
               this._observers = observers;
               this._observer = observer;
@@ -39,23 +39,23 @@ namespace Loot
                  _observers.Remove(_observer);
            }
         }
-        public void AddItem(ItemSaveData val)
+        public void AddItem(Item val)
         {
-            foreach (IObserver<ItemSaveData> observer in observers)
+            foreach (IObserver<Item> observer in observers)
             {
                 observer.OnNext(val);
             }
         }
-        public void RemoveItem(ItemSaveData val)
+        public void RemoveItem(Item val)
         {
-            foreach (IObserver<ItemSaveData> observer in observers)
+            foreach (IObserver<Item> observer in observers)
             {
                 observer.OnNext(val);
             }
         }
         public void EndTransmission()
         {
-            foreach(IObserver<ItemSaveData> observer in observers)
+            foreach(IObserver<Item> observer in observers)
             {
                 if(observers.Contains(observer))
                     observer.OnCompleted();

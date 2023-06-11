@@ -23,7 +23,7 @@ namespace Tasks
         public void GiveTask()
         {
             if(taskToGive == null || taskToGive.IsInLog) return;
-            ItemSaveData deliveryItem = taskToGive.PutTaskInLog();
+            Item deliveryItem = taskToGive.PutTaskInLog();
             inventoryController.AddItem(deliveryItem);
             
             taskLogController.AddTask(taskToGive);

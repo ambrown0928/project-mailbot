@@ -34,7 +34,7 @@ namespace Debugging
             ADD_ITEM = new DebugCommand<string, int>("add_item", "Add an item of given quantity to inventory", "add_item", (name, quantity) => 
             {
                 name = name.Replace("/", " ");
-                ItemSaveData item = new ItemSaveData(name, quantity);
+                Item item = new Item(name, quantity);
                 inventoryController.AddItem(item);
             });    
             commandList = new List<object>

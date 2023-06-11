@@ -32,8 +32,8 @@ namespace Loot
         private LootReporter lootReporter;
         private bool isPackage;
 
-        private List<ItemSaveData> itemsToLoot;
-        public List<ItemSaveData> ItemsToLoot { 
+        private List<Item> itemsToLoot;
+        public List<Item> ItemsToLoot { 
             get => itemsToLoot; 
             set 
             {
@@ -54,24 +54,24 @@ namespace Loot
             if ( isPackage && currentItem != null ) return;
 
             currentItem = eventData.pointerDrag.gameObject;
-            currentItem.GetComponent<ItemController>().ChangeSelectedItemPotentialSlot(gameObject);
+
         }
         private bool ItemNotBeingDragged(PointerEventData eventData)
         {
             return eventData.pointerDrag == null;
         }
 
-        public void AddLootItem(ItemSaveData item)
+        public void AddLootItem(Item item)
         {
             lootReporter.AddItem(item);
             itemsToLoot.Add(item);
             CreateBlerb(item);
         }
-        public void RemoveLootItem(ItemSaveData itemToRemove)
+        public void RemoveLootItem(Item itemToRemove)
         {
             currentItem = null; // removes current item so package can add new item
             itemsToLoot.Remove(itemToRemove);
-            ItemSaveData tempItemToPass = new ItemSaveData(itemToRemove.name, 0);
+            Item tempItemToPass = new Item(itemToRemove.Name, 0);
             lootReporter.RemoveItem(tempItemToPass);
             if(itemsToLoot.Count == 0 && !isPackage)
             { // keep window open if package so player can add items
@@ -87,7 +87,7 @@ namespace Loot
             windowController.Close();
         }
         
-        public LootReporter OpenLootWindow(List<ItemSaveData> loot, string title)
+        public LootReporter OpenLootWindow(List<Item> loot, string title)
         { // called by auto-generating loot enemies
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
             isPackage = false;
@@ -96,22 +96,22 @@ namespace Loot
             windowTitle.text = title;
             return lootReporter;
         }
-        public LootReporter OpenLootWindow(ItemSaveData loot, string title)
+        public LootReporter OpenLootWindow(Item loot, string title)
         {
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
 
             isPackage = true;
-            if(loot.name == "" || loot.Quantity == 0) ItemsToLoot = new List<ItemSaveData>(); // create an empty list if pkg is empty
-            else ItemsToLoot = new List<ItemSaveData>{loot}; 
+            if(loot.Name == "" || loot.Quantity == 0) ItemsToLoot = new List<Item>(); // create an empty list if pkg is empty
+            else ItemsToLoot = new List<Item>{loot}; 
             
             windowTitle.text = title;
             return lootReporter;
         }
-        public void NewLoot(List<ItemSaveData> itemsToLoot)
+        public void NewLoot(List<Item> itemsToLoot)
         {
             ResetList();
             windowController.Open();
-            foreach(ItemSaveData item in itemsToLoot) CreateBlerb(item);
+            foreach(Item item in itemsToLoot) CreateBlerb(item);
         }
         public void ResetList()
         {
@@ -120,7 +120,7 @@ namespace Loot
                 GameObject.Destroy(child.gameObject);
             }
         }
-        private void CreateBlerb(ItemSaveData item)
+        private void CreateBlerb(Item item)
         {
             // instantiate gameobject and setup requirements
             GameObject newLootBlerb = Instantiate(lootBlerbPrefab);
@@ -139,7 +139,7 @@ namespace Loot
         void OnDisable()
         {
             lootReporter.EndTransmission();
-            ItemsToLoot = new List<ItemSaveData>();
+            ItemsToLoot = new List<Item>();
         }
         void OnApplicationQuit() 
         {

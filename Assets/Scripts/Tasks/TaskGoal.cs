@@ -10,15 +10,17 @@ namespace Tasks
     public class TaskGoal
     {
         public int requiredAmount;
-        public GoalType goalType;
         public int currentAmount;
+
+        public GoalType goalType;
         public string target; // target npc to deliver to
-        public Item itemToDeliver;
+        public ItemPrototype itemToDeliver;
     
         public bool CompareTarget(string target)
         {
             return this.target == target;
         }
+
         public bool IsReached()
         {
             return currentAmount >= requiredAmount;
@@ -38,6 +40,11 @@ namespace Tasks
             if(!GoalIsOfType(GoalType.Talk) || this.target != target) return false;
             currentAmount++;
             return true;
+        }
+
+        public void CompleteGoal()
+        {
+
         }
 
         public bool GoalIsOfType(GoalType goalType)

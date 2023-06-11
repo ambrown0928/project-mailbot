@@ -7,12 +7,12 @@ using UnityEngine;
 namespace Inventory.Items
 {
     [System.Serializable] [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Package ", order = 1)]
-    public class Package : Item
+    public class PackagePrototype : ItemPrototype
     {
         internal LootObserver lootObserver;
         public LootWindowController lootWindowController;
-        public ItemSaveData intendedItem; // items package is meant to have
-        public ItemSaveData currentItem;
+        public Item intendedItem; // items package is meant to have
+        public Item currentItem;
         
         void Awake() 
         {
@@ -26,9 +26,9 @@ namespace Inventory.Items
         {
             currentItem = null;
         }
-        public void AddItem(ItemSaveData item)
+        public void AddItem(Item item)
         {
-            if(currentItem.name != "" && currentItem != null && currentItem.Quantity != 0) throw new PackageIsFullException();
+            if(currentItem.Name != "" && currentItem != null && currentItem.Quantity != 0) throw new PackageIsFullException();
 
             currentItem = item;
         }

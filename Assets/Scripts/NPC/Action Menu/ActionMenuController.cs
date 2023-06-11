@@ -52,12 +52,12 @@ namespace NPC.ActionMenu
                         CreateActionButton("Talk", nPCController.Talk);
                         break;
                     case NPCTags.TaskReciever:
-                        // TODO: ADD SKIP FOR TASK NOT BEING ABLE TO BE TURNED IN
-                        CreateActionButton("Turn in Task", nPCController.RecieveTask);
+                        // check if task has been reached
+                        if (nPC.GetComponent<TaskReciever>().TaskToRecieve.TaskIsReached()) CreateActionButton("Turn in Task", nPCController.RecieveTask);
                         break;
                     case NPCTags.TaskGiver:
-                        // TODO: ADD SKIP FOR TASK ALREADY BEING ACCEPTED
-                        CreateActionButton("Accept Task", nPCController.GiveTask);
+                        // check if task is in log
+                        if (!nPC.GetComponent<TaskGiver>().TaskToGive.IsInLog) CreateActionButton("Accept Task", nPCController.GiveTask);
                         break;
                 }
             }

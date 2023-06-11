@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace Inventory
 {
-    public class ItemController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+    public class ItemController : MonoBehaviour
     {
         #region Data Values
         [Header("Item Data")]
@@ -58,74 +58,7 @@ namespace Inventory
 
             HandlePackage();
         }
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            rectTransform.SetParent(windowGlobal.transform); // deattach from the current panel
-            dragged = true;
-            selected = false;
-            canvasGroup.blocksRaycasts = false; // item must not block raycasts while dragging so panels can interact w/ mouse
-        }
-        public void OnDrag(PointerEventData eventData)
-        {
-            rectTransform.position = Input.mousePosition;
-        }
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            canvasGroup.blocksRaycasts = true;
-            Select();
-            dragged = false;
-            selected = true;
 
-            if (PlayerHoveringOverNewSlot())
-            {
-                if(SlotIsFull())
-                {
-                    if (ItemInSlotIsTheSame())
-                    {
-                        ItemController otherItem = potentialSlot.transform.GetChild(0).GetComponent<ItemController>();
-                        AddQuantity(otherItem.quantity);
-                        otherItem.DeleteItem();
-
-                        AddItemToNewSlot();
-                        return;
-                    }
-                    SetParentAndResetPosition(parent.transform);
-                    return;
-                }
-                AddItemToNewSlot();
-                return;
-            }
-            
-            SetParentAndResetPosition(parent.transform);
-            
-        }
-
-        private void AddItemToNewSlot()
-        {
-            if (SlotIsLootWindow())
-            { // trying to add item to loot window
-                if (ItemIsPackage())
-                { // can't add package to loot window
-                    SetParentAndResetPosition(parent.transform);
-                    return;
-                }
-                try
-                {
-                    GetQuantityToSendToLootWindow();
-                    return;
-                }
-                catch (System.Exception exception)
-                {
-                    Debug.LogError(exception);
-                    SetParentAndResetPosition(parent.transform);
-                    return;
-                }
-            }
-            SwitchParentAndSetNewInventorySlot();
-            SetParentAndResetPosition(parent.transform);
-
-            SaveItem();
-        }
 
         private void SwitchParentAndSetNewInventorySlot()
         {
@@ -133,74 +66,20 @@ namespace Inventory
             potentialSlot = null;
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if(selected && ItemIsCurrentlySelected()) 
-            {
-                Unselect();
-            }
-            else
-            {
-               Select();
-            }
-        }
-
         #endregion
-        #region Extraneous GameObject Functions
-
-        public void SetParentAndResetPosition(Transform newParent)
-        {
-            rectTransform.SetParent(newParent);
-            rectTransform.position = rectTransform.parent.transform.position;
-        }
-        private void Select()
-        {
-            selected = true;
-            inventoryController.SingleItemPanel.DisplayItem(itemData);
-        }
-        private void Unselect()
-        {
-            selected = false;
-            inventoryController.SingleItemPanel.UndisplayItem();
-        }
-        public void ChangeSelectedItemPotentialSlot(GameObject potentialSlot)
-        { // called by InventoryPanel.cs
-            if(!dragged) return;
-            this.potentialSlot = potentialSlot;
-        }
         
-        #endregion
         #region Boolean / Check Functions
         /// 
         /// Region for boolean functions
         /// 
-        private bool ItemIsCurrentlySelected()
-        {
-            if(inventoryController.SingleItemPanel.GetSelectedItem() == null) return false;
-            return itemData.name == inventoryController.SingleItemPanel.GetSelectedItem().name;
-        }
-        private bool ItemInSlotIsTheSame()
-        {
-            if(potentialSlot.tag == "Loot") return false;
-            return potentialSlot.transform.GetChild(0).GetComponent<ItemController>().itemData.name == itemData.name;
-        }
-        private bool SlotIsFull()
-        {
-            if(potentialSlot.tag == "Loot") return false;
-            return potentialSlot.transform.childCount > 0;
-        }
-        private bool PlayerHoveringOverNewSlot()
-        {
-            return potentialSlot != null;
-        }
+        
+        
+        
         private bool ItemIsPackage()
         {
             return itemData.GetType() == typeof(Package);
         }
-        private bool SlotIsLootWindow()
-        {
-            return potentialSlot.gameObject.tag == "Loot";
-        }
+        
 
         #endregion
         #region Item Management Functions
@@ -209,36 +88,7 @@ namespace Inventory
         /// items. Includes quantity methods, sending the item
         /// to the loot window, and save-load methods.
         /// 
-        private void GetQuantityToSendToLootWindow()
-        {
-            ItemSaveData itemToSend = new ItemSaveData(itemData, quantity, inventorySlot);
-            inventoryController.quantityWindowController.OpenWindow(itemToSend, this);
-            this.gameObject.SetActive(false);
-        }
-        public ItemSaveData SendItemToLootWindow(int quantity)
-        {
-            if(ItemIsPackage()) throw new CannotStorePackageInPackageException();
-            ItemSaveData itemToSend = new ItemSaveData(itemData, quantity, inventorySlot);
-            return itemToSend;
-        }
-        public void RecieveQuantityToSendToLootWindow(int quantityToRemove)
-        {
-            // reset object to parent in case item is still in inventory
-            SetParentAndResetPosition(parent.transform);
-            gameObject.SetActive(true);
-
-            if(quantityToRemove == 0) return;
-
-            RemoveQuantity(quantityToRemove);
-            potentialSlot.GetComponent<LootWindowController>().AddLootItem(SendItemToLootWindow(quantityToRemove));
-            SaveItem();
-
-            if(quantity <= 0)
-            {
-                DeleteItem();
-            }
-            potentialSlot = null;
-        }
+        
         public void AddQuantity(int add)
         {
             quantity += add;

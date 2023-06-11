@@ -8,7 +8,7 @@ namespace Inventory
 {
     public class SingleItemPanelController : MonoBehaviour
     {
-        public Item currentItem;
+        public ItemPrototype currentItem;
         
         #region UI Fields
         [Header("UI Fields")]
@@ -34,7 +34,7 @@ namespace Inventory
             return currentItem == null;
         }
 
-        public void DisplayItem(Item item)
+        public void DisplayItem(ItemPrototype item)
         {
             currentItem = item;
             gameObject.SetActive(true);
@@ -44,7 +44,7 @@ namespace Inventory
             currentItem = null;
             gameObject.SetActive(false);
         }
-        public Item GetSelectedItem()
+        public ItemPrototype GetSelectedItem()
         {
             return currentItem;
         }

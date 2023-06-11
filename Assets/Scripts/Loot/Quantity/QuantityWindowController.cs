@@ -22,13 +22,13 @@ namespace Loot.Quantity
         #region Controllers
 
             private WindowController windowController;
-            private ItemController currentItemController;
+            // private ItemController currentItemController;
         
         #endregion
 
         private int currentValue;
         private int maxValue;
-        private Item itemData;
+        private ItemPrototype itemData;
 
         #region Unity Default Functions
 
@@ -50,20 +50,20 @@ namespace Loot.Quantity
         #endregion
         #region Window Functions
 
-        public void OpenWindow(ItemSaveData item, ItemController itemController)
+        public void OpenWindow(Item item)
         {
             maxValue = item.Quantity;
-            itemData = Resources.Load<Item>("Items/" + item.name); // TODO - Replace with AssetBundle / other solution
-            currentItemController = itemController;
+            itemData = Resources.Load<ItemPrototype>("Items/" + item.Name); // TODO - Replace with AssetBundle / other solution
+            // currentItemController = itemController;
 
             quantitySlider.maxValue = maxValue;
             windowController.Open();
         }
         public void CloseWindow()
         { // called when ok button is pressed
-            currentItemController.RecieveQuantityToSendToLootWindow(currentValue);
-            currentItemController = null;
-            itemData = null;
+            // currentItemController.RecieveQuantityToSendToLootWindow(currentValue);
+            // currentItemController = null;
+            // itemData = null;
             windowController.Close();
         }
         

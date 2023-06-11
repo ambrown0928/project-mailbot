@@ -1,24 +1,57 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+///
+/// Class for storing items after use / transferring item information
+/// across files and classes. Also used to "request" items 
 /// 
-/// Class for storing item 
-/// 
-
-
 namespace Inventory.Items
 {
-    [System.Serializable] [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Item", order = 1)]
-    public class Item : ScriptableObject
+    [System.Serializable]
+    public class Item
     {
-        public Sprite icon; 
-        public new string name;
-        public IType type; // TODO: Implement Types
-        [TextArea(3, 10)] public string description;
+        [SerializeField] private string name;
+        [SerializeField] private int quantity;
 
-        public virtual void Use() { type.Use(); }
+        public int Quantity { get => quantity; set => quantity = value; }
+        public string Name { get => name; set => name = value; }
+
+        public Item()
+        {
+        }
+
+        public Item(ItemPrototype itemPrototype, int quantity)
+        {
+            this.name = itemPrototype.name;
+            this.quantity = quantity;
+        }
+
+        public Item(string itemName, int quantity)
+        {
+            try
+            {
+                ItemPrototype itemPrototype = Resources.Load<ItemPrototype>("Items/" + itemName); // TODO - Replace with AssetBundle
+                this.name = itemPrototype.name;
+                this.quantity = quantity;
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError(exception);
+                throw;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == null && obj == null) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            return ( (Item) obj).name == name; // only care that item is the same in name alone
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(name, quantity);
+        }
     }
 }
-
-

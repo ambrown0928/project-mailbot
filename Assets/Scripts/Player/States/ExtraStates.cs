@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using float_oat.Desktop90;
+using Inventory;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -47,7 +48,7 @@ namespace Player.States
     
     public class InventoryState : ExtraState
     {
-        private WindowController inventoryController;
+        private InventoryController inventoryController;
     
         public override void Enter () { }
         public override void Exit () 
@@ -61,7 +62,7 @@ namespace Player.States
             body.velocity = new Vector3(0f, body.velocity.y, 0f);
             if(PlayerHasNotOpenedInventory())
             {
-                inventoryController = inventoryWindow.GetComponent<WindowController>();
+                inventoryController = inventoryWindow.GetComponentInChildren<InventoryController>();
                 inventoryController.Open();
             }   
         }
