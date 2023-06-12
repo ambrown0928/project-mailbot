@@ -11,7 +11,6 @@ namespace Saving
         {
             string itemData = JsonConvert.SerializeObject(item);
             System.IO.FileInfo filePath = new System.IO.FileInfo(Application.persistentDataPath + path);
-            Debug.Log(filePath);
             filePath.Directory.Create();
             System.IO.File.WriteAllText(filePath.FullName, itemData);
         }

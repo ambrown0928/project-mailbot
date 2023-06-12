@@ -23,6 +23,14 @@ namespace System.Storage
             storage = new List<T>();
         }
 
+        public Storage(int count)
+        {
+            storage = new List<T>();
+            for(int i = 0; i < count; i++)
+            {
+                storage.Add(default(T));
+            }
+        }
         
         public void Create(T item)
         {
@@ -36,10 +44,14 @@ namespace System.Storage
             { // search failed - array doesn't contain item
                 storage.Add(item);
             }
-        }       
-        public T Read(T item)
+        }    
+        public void Insert(int index, T item)
         {
-            return default(T);
+            storage.Insert(index, item);
+        }   
+        public T Read(int index)
+        {
+            return storage[index];
         }
         public void Update(T item)
         {
@@ -53,6 +65,10 @@ namespace System.Storage
         public void Delete(T item)
         {
             storage.Remove(item);
+        }
+        public void DeleteIndex(int index)
+        {
+            storage.RemoveAt(index);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Inventory
 {
     public class SingleItemPanelController : MonoBehaviour
     {
-        public ItemPrototype currentItem;
+        public ItemPrototype currentItemPrototype;
         
         #region UI Fields
         [Header("UI Fields")]
@@ -19,38 +19,56 @@ namespace Inventory
             [SerializeField] private Image itemIcon;
             
         #endregion
+        #region Unity Default Methods
+    
+            void Awake() 
+            {
+                UndisplayItem();
+            }
+            void Update()
+            {
+                if (NoItemSelected()) return;
+    
+                itemName.text = currentItemPrototype.name;
+                itemType.text = currentItemPrototype.GetType().ToString();
+                itemDescription.text = currentItemPrototype.description;
+                itemIcon.sprite = currentItemPrototype.icon;
+            }
 
-        void Update()
-        {
-            if (NoItemSelected()) return;
+        #endregion
+        #region Boolean Methods
 
-            itemName.text = currentItem.name;
-            itemDescription.text = currentItem.description;
-            itemIcon.sprite = currentItem.icon;
-        }
+            private bool NoItemSelected()
+            {
+                return currentItemPrototype == null;
+            }
+    
+        #endregion
+        #region Display Item Methods
+            
+            public void DisplayItem(ItemPrototype item)
+            { // called by ItemBlerbController through InventoryController
+                currentItemPrototype = item;
+                gameObject.SetActive(true);
+            }
+            public void UndisplayItem()
+            { // called by ItemBlerbController through InventoryController. also called by Deselect Global Button
+                currentItemPrototype = null;
+                gameObject.SetActive(false);
+            }
 
-        private bool NoItemSelected()
-        {
-            return currentItem == null;
-        }
+        #endregion
+        #region Item Use Methods
+    
+            public ItemPrototype GetSelectedItem()
+            { 
+                return currentItemPrototype;
+            }
+            public void UseItem()
+            { // called by use button in inspector
+                currentItemPrototype.Use();
+            }
 
-        public void DisplayItem(ItemPrototype item)
-        {
-            currentItem = item;
-            gameObject.SetActive(true);
-        }
-        public void UndisplayItem()
-        {
-            currentItem = null;
-            gameObject.SetActive(false);
-        }
-        public ItemPrototype GetSelectedItem()
-        {
-            return currentItem;
-        }
-        public void UseItem()
-        {
-            currentItem.Use();
-        }
+        #endregion
     }
 }

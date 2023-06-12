@@ -1,46 +1,51 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 ///
 /// Class for storing items after use / transferring item information
-/// across files and classes. Also used to "request" items 
+/// across files and classes. Also used to "request" items
 /// 
 namespace Inventory.Items
 {
     [System.Serializable]
     public class Item
     {
+        [JsonIgnore] private ItemPrototype itemPrototype;
         [SerializeField] private string name;
         [SerializeField] private int quantity;
+        [SerializeField] private int index;
 
         public int Quantity { get => quantity; set => quantity = value; }
         public string Name { get => name; set => name = value; }
+        [JsonIgnore] public ItemPrototype ItemPrototype { get => itemPrototype;}
+        public int Index { get => index; set => index = value; }
 
-        public Item()
-        {
-        }
+        #region Constructors
 
-        public Item(ItemPrototype itemPrototype, int quantity)
-        {
-            this.name = itemPrototype.name;
-            this.quantity = quantity;
-        }
-
-        public Item(string itemName, int quantity)
-        {
-            try
+        public Item() { } // empty constructor
+            public Item(Item item)
             {
-                ItemPrototype itemPrototype = Resources.Load<ItemPrototype>("Items/" + itemName); // TODO - Replace with AssetBundle
+                itemPrototype = Resources.Load<ItemPrototype>("Items/" + item.Name); // checks the item is valid // TODO - Replace with AssetBundle
+                this.name = item.Name;
+                this.quantity = item.Quantity;
+                this.index = item.Index;
+            }
+            public Item(ItemPrototype itemPrototype, int quantity)
+            { // load from item prototype
+                this.itemPrototype = itemPrototype;
                 this.name = itemPrototype.name;
                 this.quantity = quantity;
             }
-            catch (System.Exception exception)
-            {
-                Debug.LogError(exception);
-                throw;
+            public Item(string itemName, int quantity)
+            { // create new item instance
+                itemPrototype = Resources.Load<ItemPrototype>("Items/" + itemName); // checks the item is valid // TODO - Replace with AssetBundle
+                this.name = itemPrototype.name;
+                this.quantity = quantity;
             }
-        }
+
+        #endregion
 
         public override bool Equals(object obj)
         {
@@ -48,7 +53,6 @@ namespace Inventory.Items
             if (obj == null || GetType() != obj.GetType()) return false;
             return ( (Item) obj).name == name; // only care that item is the same in name alone
         }
-
         public override int GetHashCode()
         {
             return HashCode.Combine(name, quantity);

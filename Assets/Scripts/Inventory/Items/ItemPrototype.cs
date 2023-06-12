@@ -4,7 +4,10 @@ using UnityEngine;
 
 /// 
 /// Class for storing item data as an object in unity. Designed
-/// for saving the data an item contains permanently, but 
+/// for saving the data an item contains permanently as well as
+/// any functions the item might have. When passed, it's passed
+/// by reference with the intention of never being modified. 
+/// Exceptions only occur when the ItemPrototype is a package.
 /// 
 
 

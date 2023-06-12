@@ -7,44 +7,118 @@ using UnityEngine.EventSystems;
 using Loot.Quantity;
 using Loot;
 using System;
+using System.UI;
 
 namespace Inventory
 {
-    public class ItemBlerbController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    /// 
+    /// Class for controlling the inventory GameObject version of an item saved
+    /// in the inventory system. The quantity is determed by the InventoryController.
+    /// Has functionality for
+    /// 
+    public class ItemBlerbController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
     {
+        #region Controller Refereneces
+
+            private UIControllerGlobalContainer uIControllerGlobalContainer;
+
+        #endregion
+        #region UI Fields
         [Header("UI Fields")]
-        [SerializeField] private Text nameField;
-        [SerializeField] private Text quantityField;
-        [SerializeField] private Image icon;
 
-        [Header("GameObject Fields")]
-        [SerializeField] private GameObject dragIcon; // to store prefab
-        private GameObject _dragIcon; // for use in code
+            [SerializeField] private Text nameField;
+            [SerializeField] private Text quantityField;
+            [SerializeField] private Image icon;
 
-        private Item item;
-        public Item Item { get => item; set => item = value; }
-        private ItemPrototype itemPrototype;
+        #endregion
+        #region GameObject Variables
+        [Header("GameObject Field")]
 
-        private InventoryController inventoryController;
-        private QuantityWindowController quantityWindowController;
-        private LootWindowController lootWindowController;
+            [SerializeField] private GameObject dragIcon; // to store prefab for drag icon
+            private GameObject _dragIcon; // for use in code
+            private static GameObject currentItemHovering;
+            private ItemBlerbController itemCurrentlyHoveringOver;
 
-        private bool isOverLootWindow;
+        #endregion
+        #region Item References
+        
+            private Item item; // reference to item in inventory. controlled by InventoryController
+            public Item Item { get => item; }
+            private ItemPrototype itemPrototype; // equal to item.ItemPrototype
 
+        #endregion
+
+        private bool isOverLootWindow; // easy way to check if over loot window
+        private int currentIndex;
+        public int CurrentIndex { get => currentIndex; set => currentIndex = value; }
+        private int possibleIndex = -1;
+
+        #region Blerb & Item Functions
+        ///
+        /// Functions for controlling, initalizing, and managing items and
+        /// the blerb they're in.
+        /// 
+        public void InitializeBlerb( Item item, UIControllerGlobalContainer uIControllerGlobalContainer, int index)
+        {
+            this.item = item;
+            this.itemPrototype = item.ItemPrototype;
+            icon.sprite = itemPrototype.icon;
+
+            this.uIControllerGlobalContainer = uIControllerGlobalContainer;
+            currentIndex = index;
+            item.Index = index;
+
+            if( ItemIsType(typeof(PackagePrototype)) ) ( (PackagePrototype)this.itemPrototype ).lootWindowController = uIControllerGlobalContainer.LootWindowController;
+        }
+        public void Select()
+        { // select the object
+            if( uIControllerGlobalContainer.SingleItemPanelController.GetSelectedItem() == itemPrototype )
+            { // item is already selected
+                uIControllerGlobalContainer.SingleItemPanelController.UndisplayItem();
+                return;
+            }
+            uIControllerGlobalContainer.SingleItemPanelController.DisplayItem(itemPrototype);
+        }
+        private void HandlePackage()
+        {
+            if(!ItemIsType(typeof(PackagePrototype))) return; // don't run on items that aren't packages
+
+            PackagePrototype package = (PackagePrototype) itemPrototype; // stores explicit cast
+
+            if(package.lootObserver.currentItem == null) return; // no need to continue - no item being observed
+
+            if(package.lootObserver.currentItem.Quantity == 0) package.RemoveItem();
+            else if(package.currentItem == null || package.currentItem.Name == "") package.AddItem(package.lootObserver.currentItem);
+        }
+        private bool ItemIsType(Type type)
+        {
+            return itemPrototype.GetType() == type;
+        }
+
+        #endregion
+        #region Unity Default Functions
+        /// 
+        /// Functions called by UnityEngine.
+        /// 
         void Update()
         {
             nameField.text = item.Name;
             quantityField.text = "x" + item.Quantity;
 
+            if(transform.GetSiblingIndex() != currentIndex)
+            {
+                transform.SetSiblingIndex(currentIndex);
+                item.Index = currentIndex;
+            }
             HandlePackage();
         }
-        
         public void OnBeginDrag(PointerEventData eventData)
         {
+            // create new drag icon & make top sibling in global UI
             _dragIcon = Instantiate(dragIcon);
             _dragIcon.transform.SetParent(GetComponentInParent<Canvas>().transform);
             _dragIcon.transform.SetAsLastSibling();
-
+            // set drag icon image to item icon
             _dragIcon.GetComponent<Image>().sprite = itemPrototype.icon;
         }
         public void OnDrag(PointerEventData eventData)
@@ -58,74 +132,65 @@ namespace Inventory
         {
             if(isOverLootWindow) 
             {
-                quantityWindowController.OpenWindow(this, item, itemPrototype);
+                uIControllerGlobalContainer.QuantityWindowController.OpenWindow(item);
             }
-            else
+            if(possibleIndex > -1)
             {
-                lootWindowController = null;
+                int previousIndex = currentIndex;
+                currentIndex = possibleIndex;
+                item.Index = currentIndex;
+
+                itemCurrentlyHoveringOver.currentIndex = previousIndex;
+                itemCurrentlyHoveringOver = null;
+                possibleIndex = -1;
             }
             Destroy(_dragIcon);
         }
-
-        public void InitializeBlerb(Item item, ItemPrototype itemPrototype, 
-                                    InventoryController inventoryController,
-                                    QuantityWindowController quantityWindowController, 
-                                    LootWindowController lootWindowController)
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            this.item = item;
-            this.itemPrototype = itemPrototype;
-            icon.sprite = itemPrototype.icon;
-            this.inventoryController = inventoryController;
-            this.quantityWindowController = quantityWindowController;
-            if(ItemIsType(typeof(PackagePrototype)))
-            {
-                ((PackagePrototype)this.itemPrototype).lootWindowController = lootWindowController;
-            }
+            if ( ItemNotBeingDragged(eventData) ) return;
+            if ( eventData.pointerDrag.gameObject == this.gameObject ) return;
+
+            currentItemHovering = eventData.pointerDrag.gameObject;
+            currentItemHovering.GetComponent<ItemBlerbController>().EnterItemBlerb(this, currentIndex);
         }
 
-        public void Select()
+        private bool ItemNotBeingDragged(PointerEventData eventData)
         {
-            if(inventoryController.SingleItemPanel.GetSelectedItem() == itemPrototype)
-            {
-                inventoryController.SingleItemPanel.UndisplayItem();
-                return;
-            }
-            inventoryController.SingleItemPanel.DisplayItem(itemPrototype);
+            return eventData.pointerDrag == null;
         }
-        public void EnterLootWindow(LootWindowController lootWindowController)
+
+        public void OnPointerExit(PointerEventData eventData)
         {
-            this.lootWindowController = lootWindowController;
+            if( ItemNotBeingDragged(eventData) ) return;
+            if( currentItemHovering == null) return;
+            
+            currentItemHovering.GetComponent<ItemBlerbController>().ExitItemBlerb();
+            currentItemHovering = null;
+        }
+        #endregion
+        #region Loot Window Functions
+        /// 
+        /// Functions called by the loot and quantity windows.
+        /// 
+        public void EnterLootWindow()
+        { // called by loot window OnPointerEnter
             isOverLootWindow = true;
         }
-        public void SendToLootWindow(int quantity)
-        {
-            item.Quantity -= quantity;
-            if(item.Quantity <= 0) inventoryController.RemoveItem(item);
-
-            Item itemToSend = new Item(item.Name, quantity);
-            lootWindowController.AddLootItem(itemToSend);
-            lootWindowController = null;
-        }
         public void ExitLootWindow()
-        {
+        { // called by loot window OnPointerExit
             isOverLootWindow = false;
         }
-
-        private void HandlePackage()
+        public void EnterItemBlerb(ItemBlerbController itemCurrentlyHoveringOver, int index)
         {
-            if(!ItemIsType(typeof(PackagePrototype))) return;
-
-            PackagePrototype package = (PackagePrototype) itemPrototype;
-
-            if(package.lootObserver.currentItem == null) return;
-
-            if(package.lootObserver.currentItem.Quantity == 0) package.RemoveItem();
-            else if(package.currentItem.Name == "") package.AddItem(package.lootObserver.currentItem);
+            possibleIndex = index;
+            this.itemCurrentlyHoveringOver = itemCurrentlyHoveringOver;
         }
-
-        private bool ItemIsType(Type type)
+        public void ExitItemBlerb()
         {
-            return itemPrototype.GetType() == type;
+            possibleIndex = -1;
+            itemCurrentlyHoveringOver = null;
         }
+        #endregion
     }
 }

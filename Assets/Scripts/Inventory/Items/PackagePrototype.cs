@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using Loot;
 using UnityEngine;
 
+/// 
+/// Class for a scriptable object representation 
+/// 
+
 namespace Inventory.Items
 {
     [System.Serializable] [CreateAssetMenu(fileName = "Data", menuName = "Scriptable Objects/Package ", order = 1)]
@@ -11,8 +15,8 @@ namespace Inventory.Items
     {
         internal LootObserver lootObserver;
         public LootWindowController lootWindowController;
-        public Item intendedItem; // items package is meant to have
-        public Item currentItem;
+        public Item intendedItem; // item package is meant to have
+        public Item currentItem; // item package currently contains
         
         void OnEnable() 
         {
@@ -29,7 +33,7 @@ namespace Inventory.Items
         }
         public void AddItem(Item item)
         {
-            if(currentItem.Name != "" && currentItem != null && currentItem.Quantity != 0) throw new PackageIsFullException();
+            if(currentItem != null && currentItem.Name != "" && currentItem.Quantity != 0) throw new PackageIsFullException();
 
             currentItem = item;
         }

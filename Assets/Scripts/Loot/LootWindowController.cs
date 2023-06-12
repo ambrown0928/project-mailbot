@@ -15,7 +15,7 @@ namespace Loot
         #region Controller Fields
         [Header("Controller Fields")]
 
-            [SerializeField] private WindowController windowController;
+            [SerializeField] private WindowController windowController; // controls opening and closing this controller
             [SerializeField] private InventoryController inventoryController;
             [SerializeField] private Text windowTitle;
 
@@ -55,12 +55,15 @@ namespace Loot
             if ( eventData.pointerDrag.gameObject == null ) return;
 
             currentItemHovering = eventData.pointerDrag.gameObject;
-            currentItemHovering.GetComponent<ItemBlerbController>().EnterLootWindow(this);
+            if(currentItemHovering.GetComponent<Slider>() != null) { currentItemHovering = null; return; }
+            currentItemHovering.GetComponent<ItemBlerbController>().EnterLootWindow();
         }
         public void OnPointerExit(PointerEventData eventData)
         {
             if ( currentItemHovering == null ) return;
+            
             currentItemHovering.GetComponent<ItemBlerbController>().ExitLootWindow();
+            currentItemHovering = null;
         }
 
         private bool ItemNotBeingDragged(PointerEventData eventData)
