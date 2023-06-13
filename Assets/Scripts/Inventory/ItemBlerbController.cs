@@ -87,8 +87,10 @@ namespace Inventory
 
             if(package.lootObserver.currentItem == null) return; // no need to continue - no item being observed
 
-            if(package.lootObserver.currentItem.Quantity == 0) package.RemoveItem();
-            else if(package.currentItem == null || package.currentItem.Name == "") package.AddItem(package.lootObserver.currentItem);
+            if(package.lootObserver.currentItem.Quantity == 0) 
+                package.RemoveItem();
+            else if(package.currentItem == null || package.currentItem.Name == "" || package.currentItem.Quantity == 0) 
+                package.AddItem(package.lootObserver.currentItem);
         }
         private bool ItemIsType(Type type)
         {
@@ -102,6 +104,8 @@ namespace Inventory
         /// 
         void Update()
         {
+            HandlePackage();
+
             nameField.text = item.Name;
             quantityField.text = "x" + item.Quantity;
 
@@ -110,7 +114,6 @@ namespace Inventory
                 transform.SetSiblingIndex(currentIndex);
                 item.Index = currentIndex;
             }
-            HandlePackage();
         }
         public void OnBeginDrag(PointerEventData eventData)
         {
@@ -124,7 +127,6 @@ namespace Inventory
         public void OnDrag(PointerEventData eventData)
         {
             if(_dragIcon == null) return;
-            if(ItemIsType(typeof(PackagePrototype))) return;
 
             _dragIcon.transform.position = eventData.position;
         }
@@ -175,6 +177,7 @@ namespace Inventory
         /// 
         public void EnterLootWindow()
         { // called by loot window OnPointerEnter
+            if(ItemIsType(typeof(PackagePrototype))) return;
             isOverLootWindow = true;
         }
         public void ExitLootWindow()

@@ -100,6 +100,7 @@ namespace Loot
         { // called by auto-generating loot enemies
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
 
+            windowController.Open();
             isPackage = false;
             ItemsToLoot = loot;
 
@@ -109,7 +110,8 @@ namespace Loot
         public LootReporter OpenLootWindow(Item loot, string title)
         {
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
-
+            
+            windowController.Open();
             isPackage = true;
             if(loot.Name == "" || loot.Quantity == 0) ItemsToLoot = new List<Item>(); // create an empty list if pkg is empty
             else ItemsToLoot = new List<Item>{ loot }; 
@@ -120,7 +122,6 @@ namespace Loot
         public void NewLoot()
         {
             ResetList();
-            windowController.Open();
             foreach(Item item in itemsToLoot) CreateBlerb(item);
         }
         public void ResetList()

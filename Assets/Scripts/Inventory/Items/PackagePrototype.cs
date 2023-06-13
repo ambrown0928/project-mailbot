@@ -28,11 +28,13 @@ namespace Inventory.Items
         }
         public void RemoveItem()
         {
+            Debug.Log("Removing " + currentItem.Name + " from package.");
             currentItem = null;
             lootObserver.currentItem = null;
         }
         public void AddItem(Item item)
         {
+            Debug.Log("Adding " + item.Name + " to package.");
             if(currentItem != null && currentItem.Name != "" && currentItem.Quantity != 0) throw new PackageIsFullException();
 
             currentItem = item;

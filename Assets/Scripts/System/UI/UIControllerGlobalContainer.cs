@@ -5,7 +5,10 @@ using Loot;
 using Loot.Quantity;
 using Tasks.UI;
 using UnityEngine;
-
+/// 
+/// Class for holding all controller variables. Makes references global and
+/// accessible to any object needed.
+/// 
 namespace System.UI
 {
     public class UIControllerGlobalContainer : MonoBehaviour

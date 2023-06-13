@@ -59,7 +59,6 @@ namespace Loot
             {
                 if(observers.Contains(observer))
                     observer.OnCompleted();
-                
             }
             observers.Clear();
         }
