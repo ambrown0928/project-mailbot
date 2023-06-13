@@ -33,6 +33,7 @@ namespace Player
             private static TaskLogState taskLogState = new TaskLogState();
             private static DeathState deathState = new DeathState();
             private static DebugState debugState = new DebugState();
+            private static DialogState dialogState = new DialogState();
         #endregion
 
             private Vector2 move;
@@ -51,6 +52,7 @@ namespace Player
         [Header("Rotation Fields")]
             [SerializeField] private float rotationPower;
             [SerializeField] private float rotationSpeed;
+            private Quaternion previousRotation;
         #endregion
 
         #region Game Object Variables
@@ -60,6 +62,7 @@ namespace Player
             [SerializeField] private GameObject corpse;
             [SerializeField] private GameObject inventoryWindow;
             [SerializeField] private GameObject taskWindow;
+            [SerializeField] private GameObject dialogWindow;
         #endregion
 
         #region Hover Variables
@@ -85,9 +88,25 @@ namespace Player
             playerInput = GetComponent<PlayerInput>();
             stateController = new StateController(idleState, body);
             Physics.gravity = new Vector3(0f, gravity, 0f);
+            previousRotation = Quaternion.identity;
         }
 
-        void Update() {  } // for future use
+        void Update() 
+        {
+            if( stateController.PlayerIsInState(typeof(DialogState)) )
+            {
+                if( !PlayerIsInDialog() ) 
+                {
+                    stateController.SetState(idleState);
+                    stateController.CheckStateStack();
+
+                    followTarget.transform.rotation = previousRotation;
+                    previousRotation = Quaternion.identity;
+                }
+                return;
+            }
+            if( PlayerIsInDialog() ) stateController.SetState(dialogState);
+        } 
 
         void FixedUpdate()
         {
@@ -101,7 +120,7 @@ namespace Player
 
         private void MovementRotation()
         {
-            if(InventoryIsOpen() || TaskLogIsOpen()) return;
+            if(InventoryIsOpen() || TaskLogIsOpen() || PlayerIsInDialogState()) return;
 
             // skip when dashing so player's dash is in the same direction as it is based off model.transform.forward
             if ( IsMoving() &&
@@ -119,6 +138,16 @@ namespace Player
         private void LookRotation()
         {
             if(InventoryIsOpen() || TaskLogIsOpen()) return;
+
+            if(PlayerIsInDialogState())
+            {
+                if(previousRotation == Quaternion.identity) previousRotation = followTarget.transform.rotation;
+                followTarget.transform.rotation = Quaternion.Euler( 0, 
+                                                                    followTarget.transform.rotation.eulerAngles.y,
+                                                                    followTarget.transform.rotation.eulerAngles.z);
+                followTarget.transform.rotation *= Quaternion.AngleAxis(rotationPower, Vector3.up);
+                return;
+            }
             
             followTarget.transform.rotation *= Quaternion.AngleAxis(look.x * rotationPower, Vector3.up);
             followTarget.transform.rotation *= Quaternion.AngleAxis(look.y * rotationPower, Vector3.right);
@@ -177,24 +206,26 @@ namespace Player
          */
         void ManageStates()
         {
-            if (PlayerIsDashing()  || InventoryIsOpen() || TaskLogIsOpen() || PlayerIsInDebugState()) return;
+            if (PlayerIsDashing()  || InventoryIsOpen() 
+            || TaskLogIsOpen() || PlayerIsInDebugState() 
+            || PlayerIsInDialogState()) 
+                return;
+
             stateController.CheckStateStack();
             switch (stateController.CurrentState)
             {
                 case IdleState:
+                case JumpingState:
+                case DialogState:
+                case DebugState:
                     stateController.RunCurrentState();
                     break;
                 case MovingState:
-                    stateController.RunCurrentState(move);
-                    break;
                 case TraversalState:
                     stateController.RunCurrentState(move);
                     break;
                 case DashingState:
                     dashCoroutine = StartCoroutine(Dash());
-                    break;
-                case JumpingState:
-                    stateController.RunCurrentState();
                     break;
                 case InventoryState:
                     stateController.RunCurrentState(inventoryWindow);
@@ -204,9 +235,6 @@ namespace Player
                     break;
                 case DeathState:
                     respawnCoroutine = StartCoroutine(Respawn());
-                    break;
-                case DebugState:
-                    stateController.RunCurrentState();
                     break;
             }
         }
@@ -296,7 +324,7 @@ namespace Player
         }
         void OnLook(InputValue val)
         {
-            if(PlayerIsInDebugState()) return;
+            if(PlayerIsInDebugState() || PlayerIsInDialog()) return;
             look = val.Get<Vector2>();
         }
         void OnFire()
@@ -387,7 +415,14 @@ namespace Player
         {
             return stateController.PlayerIsInState(typeof(DebugState));
         }
-
+        private bool PlayerIsInDialog()
+        {
+            return dialogWindow.activeInHierarchy;
+        }
+        private bool PlayerIsInDialogState()
+        {
+            return stateController.PlayerIsInState(typeof(DialogState));
+        }
         private bool PlayerIsWithinRespawnPoint()
         {
             return currentController != null;

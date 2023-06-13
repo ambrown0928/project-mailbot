@@ -19,18 +19,9 @@ namespace Player.States
         public virtual void Enter () { }
         public virtual void Exit () { }
         
-        public virtual void Action(Rigidbody body)
-        {
-            
-        }
-        public virtual void Action(Rigidbody body, Vector2 val)
-        {
-            
-        }
-        public virtual void Action(Rigidbody body, GameObject obj)
-        {
-            
-        }
+        public virtual void Action(Rigidbody body) { }
+        public virtual void Action(Rigidbody body, Vector2 val) { }
+        public virtual void Action(Rigidbody body, GameObject obj) { }
     }
     
     public class JumpingState : ExtraState
@@ -87,11 +78,7 @@ namespace Player.States
         public override void Action (Rigidbody body, GameObject taskWindow)
         {
             body.velocity = new Vector3(0f, body.velocity.y, 0f);
-            if(PlayerHasNotOpenedTaskLog())
-            {
-                taskLogController = taskWindow.GetComponent<WindowController>();
-                taskLogController.Open();
-            }   
+            if(PlayerHasNotOpenedTaskLog()) taskWindow.GetComponent<WindowController>().Open();
         }
     
         private bool PlayerHasNotOpenedTaskLog()
@@ -109,14 +96,20 @@ namespace Player.States
     
         public override void Enter () { Debug.Log("Entering Dashing State"); }
         public override void Exit () { Debug.Log("Exiting Dashing State"); }
-    
-        public override void Action(Rigidbody body, Vector2 val)
-        {
-            
-        }
+
         public override void Action(Rigidbody body, GameObject model)
         {
             body.velocity = model.transform.forward * dashSpeed;
+        }
+    }
+    public class DialogState : ExtraState
+    {
+        public override void Enter () { Debug.Log("Entering Dashing State"); }
+        public override void Exit () { Debug.Log("Exiting Dashing State"); }
+
+        public override void Action(Rigidbody body)
+        {
+            body.velocity = new Vector3(0f, body.velocity.y, 0f);
         }
     }
 }

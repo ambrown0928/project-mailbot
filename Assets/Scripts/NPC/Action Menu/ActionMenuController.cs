@@ -11,7 +11,7 @@ namespace NPC.ActionMenu
     public class ActionMenuController : MonoBehaviour
     {   
         #region UI Fields
-        [Header("UI Fields")]
+        [Header("UI")]
 
             [SerializeField] private Text nPCName;
             [SerializeField] private GameObject actionButtonContainer;
@@ -19,7 +19,7 @@ namespace NPC.ActionMenu
         
         #endregion
         #region Component Fields
-        [Header("Component Fields")]
+        [Header("Components")]
 
             [SerializeField] private WindowController windowController;
             [SerializeField] private Camera mainCamera;
@@ -44,23 +44,23 @@ namespace NPC.ActionMenu
             currentNPC = nPC;
             nPCName.text = nPCController.nPCName;
 
-            foreach(NPCTags tag in nPCController.tags)
-            {
-                switch(tag)
-                {
-                    case NPCTags.Dialogue:
-                        CreateActionButton("Talk", nPCController.Talk);
-                        break;
-                    case NPCTags.TaskReciever:
-                        // check if task has been reached
-                        if (nPC.GetComponent<TaskReciever>().TaskToRecieve.TaskIsReached()) CreateActionButton("Turn in Task", nPCController.RecieveTask);
-                        break;
-                    case NPCTags.TaskGiver:
-                        // check if task is in log
-                        if (!nPC.GetComponent<TaskGiver>().TaskToGive.IsInLog) CreateActionButton("Accept Task", nPCController.GiveTask);
-                        break;
-                }
-            }
+            // foreach(NPCTags tag in nPCController.tags)
+            // {
+            //     switch(tag)
+            //     {
+            //         case NPCTags.Dialog:
+            //             CreateActionButton("Talk", nPCController.Talk);
+            //             break;
+            //         // case NPCTags.TaskReciever:
+            //         //     // check if task has been reached
+            //         //     if (nPC.GetComponent<TaskReciever>().TaskToRecieve.TaskIsReached()) CreateActionButton("Turn in Task", nPCController.RecieveTask);
+            //         //     break;
+            //         // case NPCTags.TaskGiver:
+            //         //     // check if task is in log
+            //         //     if (!nPC.GetComponent<TaskGiver>().TaskToGive.IsInLog) CreateActionButton("Accept Task", nPCController.GiveTask);
+            //         //     break;
+            //     }
+            // }
         }
         private void CreateActionButton(string buttonTitle, Action buttonAction)
         {

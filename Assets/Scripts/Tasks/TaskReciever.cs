@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Dialogues;
 using Inventory;
 using Inventory.Items;
 using Tasks;
@@ -13,7 +12,6 @@ namespace Tasks
     {
         [SerializeField] private InventoryController inventoryController;
         [SerializeField] private Task taskToRecieve; // set per npc, task meant to be recieved
-        public Dialogue recievedDialogue;
 
         public Task TaskToRecieve { get => taskToRecieve; set => taskToRecieve = value; }
 

@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Dialog;
+using Dialog.Answer;
 using Inventory;
 using Loot;
 using Loot.Quantity;
@@ -18,12 +20,16 @@ namespace System.UI
         [SerializeField] private LootWindowController lootWindowController;
         [SerializeField] private QuantityWindowController quantityWindowController;
         [SerializeField] private TaskLogController taskLogController;
+        [SerializeField] private DialogWindowController dialogWindowController;
+        [SerializeField] private AnswerWindowController answerWindowController;
         
         public InventoryController InventoryController { get => inventoryController;  }
         public SingleItemPanelController SingleItemPanelController { get => singleItemPanelController; }
         public LootWindowController LootWindowController { get => lootWindowController; }
         public QuantityWindowController QuantityWindowController { get => quantityWindowController; }
         public TaskLogController TaskLogController { get => taskLogController; }
+        public DialogWindowController DialogWindowController { get => dialogWindowController; }
+        public AnswerWindowController AnswerWindowController { get => answerWindowController; }
     }
     
 }
