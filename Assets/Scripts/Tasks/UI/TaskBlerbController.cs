@@ -9,28 +9,24 @@ namespace Tasks.UI
     public class TaskBlerbController : MonoBehaviour
     {
         [SerializeField] private Text blerbName;
-        [SerializeField] private Task task;
-        [SerializeField] private TaskLogController taskLogController;
+        [SerializeField] private TaskGraph task;
+        [SerializeField] private TaskWindowController taskWindowController;
 
-        public void InitializeBlerb(TaskLogController taskLogController, Task task)
+        public void InitializeBlerb(TaskWindowController taskWindowController, TaskGraph task)
         {
-            blerbName.text = task.name;
+            this.taskWindowController = taskWindowController;
+
             this.task = task;
-            this.taskLogController = taskLogController;
+            blerbName.text = task.name;
         }
         private void Update() 
         {
-            GetComponent<D90Button>().interactable = !IsHighlightedTask();
+            GetComponent<D90Button>().interactable = false;
         }
         public void OnClick()
         {
-            taskLogController.TaskPanelController.HighlightedTask = task;
         }
-        private bool IsHighlightedTask()
-        {
-            if(taskLogController.TaskPanelController.HighlightedTask == null) return false;
-            return task.id == taskLogController.TaskPanelController.HighlightedTask.id;
-        }
+        
     }
     
 }

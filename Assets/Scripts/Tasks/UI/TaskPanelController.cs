@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using XNode;
 
 namespace Tasks.UI
 {
@@ -10,50 +11,67 @@ namespace Tasks.UI
     {
         [SerializeField] private Text taskName;
         [SerializeField] private Text taskDescription;
+
         [SerializeField] private GameObject nextArrow;
         [SerializeField] private GameObject previousArrow;
-        [SerializeField] private Task highlightedTask;
-        [SerializeField] private int localCurrentTask;
 
-        public Task HighlightedTask { get => highlightedTask; 
-            set 
-            {
-                localCurrentTask = value.CurrentTask;
-                highlightedTask = value; 
-            }
+        [SerializeField] private TaskGraph currentTask;
+        private TaskSegment _activeSegment;
+
+        public void HighlightTask(TaskGraph task)
+        {
+            currentTask = task;
+            _activeSegment = TaskController.GetCurrentNode(currentTask);
+        }
+
+        public void UpdateText()
+        {
+            taskName.text = _activeSegment.name;
+            taskDescription.text = _activeSegment.description;
         }
 
         void Update()
         {
             if(NoTaskSelected()) return;
-            
-            taskName.text = highlightedTask.TaskStages[localCurrentTask].name;
-            taskDescription.text = highlightedTask.TaskStages[localCurrentTask].description;
 
-            nextArrow.SetActive(LocalCurrentTaskLessThanHighlightedCurrentTask());
-            previousArrow.SetActive(CurrentTaskGreaterThanZero());
+            nextArrow.SetActive(NextTaskAvailable());
+            previousArrow.SetActive(PreviousTaskAvailable());
         }
 
         private bool NoTaskSelected()
         {
-            return highlightedTask == null;
+            return currentTask == null;
         }
-        private bool LocalCurrentTaskLessThanHighlightedCurrentTask()
+        private bool NextTaskAvailable()
         {
-            return localCurrentTask < highlightedTask.CurrentTask;
+            int index = 0;
+            foreach(TaskGoal goal in _activeSegment.CompletionPaths)
+            {
+                NodePort port = _activeSegment.GetPort("Element " + index);
+                if(port.IsConnected && (port.Connection.node as TaskSegment).completed)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
-        private bool CurrentTaskGreaterThanZero()
+        private bool PreviousTaskAvailable()
         {
-            return localCurrentTask > 0;
+            if(_activeSegment.GetInputPort("input").IsConnected) return true;
+            return false;
         }
-
-        public void IncreaseLocalCurrentTask()
+        public void GoToPreviousNode()
         {
-            localCurrentTask++;
+            _activeSegment = _activeSegment.GetInputPort("input").Connection.node as TaskSegment;
         }
-        public void DecreaseLocalCurrentTask()
+        public void GoToNextNode()
         {
-            localCurrentTask--;
+            int index = 0;
+            foreach(TaskGoal goal in _activeSegment.CompletionPaths)
+            {
+                NodePort port = _activeSegment.GetPort("Element " + index);
+                if((port.Connection.node as TaskSegment).completed) _activeSegment = port.Connection.node as TaskSegment;
+            }
         }
     }
 }

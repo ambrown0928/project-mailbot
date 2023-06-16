@@ -10,7 +10,7 @@ namespace  Tasks.UI
         public D90Button inProgressButton;
         public D90Button completedButton;
 
-        [SerializeField] private TaskLogController taskLogController;
+        [SerializeField] private TaskWindowController taskWindowController;
 
         private void Awake() 
         {
@@ -19,8 +19,8 @@ namespace  Tasks.UI
 
         private void Update() 
         {
-            inProgressButton.interactable = taskLogController.GetShowCompleted();
-            completedButton.interactable = !taskLogController.GetShowCompleted();
+            inProgressButton.interactable = taskWindowController.GetShowCompleted();
+            completedButton.interactable = !taskWindowController.GetShowCompleted();
         }
     }
 }

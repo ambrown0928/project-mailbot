@@ -152,7 +152,7 @@ namespace Inventory
 
             SaveInventory();
         }
-        public void TakeItem(Item item)
+        public Item TakeItem(Item item)
         { // try to take an item from the inventory
             Item takenItem = inventoryStorage.Search(item);
             // item.Quantity = amount requested to be taken
@@ -162,10 +162,11 @@ namespace Inventory
             if(takenItem.Quantity == 0)
             { // all of item is taken, remove from inventory
                 RemoveItem(takenItem);
-                return;
+                return takenItem;
             }
             inventoryStorage.Update(takenItem);
             SaveInventory();
+            return(takenItem);
         }
         public bool CanTakeItem(Item item)
         {

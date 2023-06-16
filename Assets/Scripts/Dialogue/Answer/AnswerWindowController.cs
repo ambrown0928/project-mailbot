@@ -22,7 +22,11 @@ namespace Dialog.Answer
             else windowController.Open();
 
             int index = 0;
-            foreach(string answer in answers) { CreateBlerb(answer, index, answerClicked); index++; }
+            foreach(string answer in answers) 
+            { 
+                CreateBlerb(answer, index, answerClicked); 
+                index++; 
+            }
         }
 
         public void CreateBlerb(string answer, int index, Action<int> answerClicked)
@@ -31,7 +35,10 @@ namespace Dialog.Answer
             answerButton.transform.SetParent(answerContainer.transform);
             
             AnswerBlerbController answerBlerbController = answerButton.GetComponent<AnswerBlerbController>();
-            answerBlerbController.InitializeBlerb(answer, index, answerClicked);
+            answerBlerbController.InitializeBlerb(answer, 
+                                                  index, 
+                                                  globalContainerUI.DialogWindowController.NextSegments[index],
+                                                  answerClicked);
         }
         public void CollapseWindow()
         {

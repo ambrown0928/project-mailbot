@@ -13,7 +13,6 @@ namespace Respawn
         [SerializeField] private RectTransform canvas;
         [SerializeField] private WindowController respawnWindow;
 
-        [SerializeField] private Task taskToGive;
         
         public RespawnData Data { get => data; set => data = value; }
     
@@ -21,8 +20,6 @@ namespace Respawn
         {
             respawnWindow.Open();
             respawnWindow.GetComponentInChildren<Text>().text = data.location;
-            respawnWindow.GetComponentInChildren<TaskGiverWindow>().TaskToGive = taskToGive;
-            respawnWindow.GetComponentInChildren<TaskGiverWindow>().SetTaskWindow();
         }
         public void CloseRespawnWindow()
         {

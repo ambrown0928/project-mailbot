@@ -1,20 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace Dialog
+namespace Tasks
 {
-    [System.Serializable]
+    [Serializable]
     public struct Connection { }
-    public class DialogSegment : Node
+    public class TaskSegment : Node
     {
         [Input] public Connection input;
+        public int id;
+
+        public string description;
         
-        public bool visited;
-        public string DialogText;
-        
-        [Output(dynamicPortList = true)] public List<string> Answers;
+        public bool completed;
+
+        [Output(dynamicPortList = true)] public List<TaskGoal> CompletionPaths;
 
         public override object GetValue(NodePort port)
         {

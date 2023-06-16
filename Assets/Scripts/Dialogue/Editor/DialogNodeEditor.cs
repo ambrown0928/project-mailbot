@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Tasks;
+using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using XNode;
@@ -41,7 +43,7 @@ namespace Dialog.Editor
 
             serializedObject.ApplyModifiedProperties();
         }
-        void OnCreateReorderableList(ReorderableList list)
+        internal void OnCreateReorderableList(ReorderableList list)
         {
             list.elementHeightCallback = (int index) => { return 60; };
 
@@ -62,6 +64,41 @@ namespace Dialog.Editor
                     NodeEditorGUILayout.PortField(pos, port);
                 }
             };
+        }
+    }
+    [CustomNodeEditor(typeof(RecieveTaskSegment))]
+    public class RecieveTaskNodeEditor : DialogNodeEditor
+    {
+        public override void OnBodyGUI()
+        {
+            serializedObject.Update();
+
+            RecieveTaskSegment currentSegment = serializedObject.targetObject as RecieveTaskSegment;
+            NodeEditorGUILayout.PortField(currentSegment.GetPort("input"));
+            GUILayout.Label("Task");
+            currentSegment.task = EditorGUILayout.ObjectField(currentSegment.task, typeof(TaskSegment), false) as TaskSegment;
+
+            GUILayout.Label("Rejection Text");
+            currentSegment.rejectText = GUILayout.TextArea(currentSegment.rejectText, new GUILayoutOption[]
+            {
+                GUILayout.MinHeight(50),
+            });
+
+            NodeEditorGUILayout.DynamicPortList(
+                "Answers",
+                typeof(string),
+                serializedObject,
+                NodePort.IO.Input,
+                Node.ConnectionType.Override,
+                Node.TypeConstraint.None,
+                OnCreateReorderableList
+            );
+
+            foreach (NodePort dynamicPort in target.DynamicPorts)
+            {
+                if(NodeEditorGUILayout.IsDynamicPortListPort(dynamicPort)) continue;
+                NodeEditorGUILayout.PortField(dynamicPort);
+            }
         }
     }
 }

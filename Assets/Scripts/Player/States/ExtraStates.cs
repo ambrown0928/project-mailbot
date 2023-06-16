@@ -104,8 +104,8 @@ namespace Player.States
     }
     public class DialogState : ExtraState
     {
-        public override void Enter () { Debug.Log("Entering Dashing State"); }
-        public override void Exit () { Debug.Log("Exiting Dashing State"); }
+        public override void Enter () { Debug.Log("Entering Dialog State"); }
+        public override void Exit () { Debug.Log("Exiting Dialog State"); }
 
         public override void Action(Rigidbody body)
         {
