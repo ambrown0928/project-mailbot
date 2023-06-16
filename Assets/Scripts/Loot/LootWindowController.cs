@@ -10,12 +10,12 @@ using UnityEngine.UI;
 
 namespace Loot
 {
-    public class LootWindowController : MonoBehaviour, IPointerEnterHandler
+    public class LootWindowController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         #region Controller Fields
         [Header("Controller Fields")]
 
-            [SerializeField] private WindowController windowController;
+            [SerializeField] private WindowController windowController; // controls opening and closing this controller
             [SerializeField] private InventoryController inventoryController;
             [SerializeField] private Text windowTitle;
 
@@ -25,20 +25,20 @@ namespace Loot
 
             [SerializeField] private GameObject lootBlerbPrefab;
             [SerializeField] private GameObject lootListWindow;
-            [SerializeField] private GameObject currentItem;
+            [SerializeField] private GameObject currentItemHovering;
 
         #endregion
 
         private LootReporter lootReporter;
         private bool isPackage;
 
-        private List<ItemSaveData> itemsToLoot;
-        public List<ItemSaveData> ItemsToLoot { 
+        private List<Item> itemsToLoot;
+        public List<Item> ItemsToLoot { 
             get => itemsToLoot; 
             set 
             {
                 itemsToLoot = value;
-                NewLoot(itemsToLoot);
+                NewLoot();
             } 
         }
 
@@ -51,27 +51,36 @@ namespace Loot
         {
             // checks if item is being dragged and makes that the currentItem
             if ( ItemNotBeingDragged(eventData) ) return;
-            if ( isPackage && currentItem != null ) return;
+            if ( isPackage && ItemsToLoot.Count > 0 ) return;
+            if ( eventData.pointerDrag.gameObject == null ) return;
 
-            currentItem = eventData.pointerDrag.gameObject;
-            currentItem.GetComponent<ItemController>().ChangeSelectedItemPotentialSlot(gameObject);
+            currentItemHovering = eventData.pointerDrag.gameObject;
+            if(currentItemHovering.GetComponent<Slider>() != null) { currentItemHovering = null; return; }
+            currentItemHovering.GetComponent<ItemBlerbController>().EnterLootWindow();
         }
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if ( currentItemHovering == null ) return;
+            
+            currentItemHovering.GetComponent<ItemBlerbController>().ExitLootWindow();
+            currentItemHovering = null;
+        }
+
         private bool ItemNotBeingDragged(PointerEventData eventData)
         {
             return eventData.pointerDrag == null;
         }
 
-        public void AddLootItem(ItemSaveData item)
+        public void AddLootItem(Item item)
         {
             lootReporter.AddItem(item);
             itemsToLoot.Add(item);
             CreateBlerb(item);
         }
-        public void RemoveLootItem(ItemSaveData itemToRemove)
+        public void RemoveLootItem(Item itemToRemove)
         {
-            currentItem = null; // removes current item so package can add new item
             itemsToLoot.Remove(itemToRemove);
-            ItemSaveData tempItemToPass = new ItemSaveData(itemToRemove.name, 0);
+            Item tempItemToPass = new Item(itemToRemove.Name, 0);
             lootReporter.RemoveItem(tempItemToPass);
             if(itemsToLoot.Count == 0 && !isPackage)
             { // keep window open if package so player can add items
@@ -87,31 +96,33 @@ namespace Loot
             windowController.Close();
         }
         
-        public LootReporter OpenLootWindow(List<ItemSaveData> loot, string title)
+        public LootReporter OpenLootWindow(List<Item> loot, string title)
         { // called by auto-generating loot enemies
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
+
+            windowController.Open();
             isPackage = false;
             ItemsToLoot = loot;
 
             windowTitle.text = title;
             return lootReporter;
         }
-        public LootReporter OpenLootWindow(ItemSaveData loot, string title)
+        public LootReporter OpenLootWindow(Item loot, string title)
         {
             if(windowController.gameObject.activeInHierarchy) throw new LootWindowIsOpenException();
-
-            isPackage = true;
-            if(loot.name == "" || loot.Quantity == 0) ItemsToLoot = new List<ItemSaveData>(); // create an empty list if pkg is empty
-            else ItemsToLoot = new List<ItemSaveData>{loot}; 
             
+            windowController.Open();
+            isPackage = true;
+            if(loot.Name == "" || loot.Quantity == 0) ItemsToLoot = new List<Item>(); // create an empty list if pkg is empty
+            else ItemsToLoot = new List<Item>{ loot }; 
+
             windowTitle.text = title;
             return lootReporter;
         }
-        public void NewLoot(List<ItemSaveData> itemsToLoot)
+        public void NewLoot()
         {
             ResetList();
-            windowController.Open();
-            foreach(ItemSaveData item in itemsToLoot) CreateBlerb(item);
+            foreach(Item item in itemsToLoot) CreateBlerb(item);
         }
         public void ResetList()
         {
@@ -120,14 +131,12 @@ namespace Loot
                 GameObject.Destroy(child.gameObject);
             }
         }
-        private void CreateBlerb(ItemSaveData item)
+        private void CreateBlerb(Item item)
         {
             // instantiate gameobject and setup requirements
             GameObject newLootBlerb = Instantiate(lootBlerbPrefab);
             newLootBlerb.transform.SetParent(lootListWindow.transform, false);
             newLootBlerb.transform.SetAsFirstSibling();
-
-            if(isPackage) currentItem = newLootBlerb;
 
             // setup loot blerb controller
             LootBlerbController newLootBlerbController = newLootBlerb.GetComponent<LootBlerbController>();
@@ -139,11 +148,12 @@ namespace Loot
         void OnDisable()
         {
             lootReporter.EndTransmission();
-            ItemsToLoot = new List<ItemSaveData>();
+            ItemsToLoot = new List<Item>();
         }
         void OnApplicationQuit() 
         {
             lootReporter.EndTransmission();
         }
+
     }
 }

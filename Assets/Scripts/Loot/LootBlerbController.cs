@@ -20,7 +20,7 @@ namespace Loot
         #region Item Data Fields
         [Header("Item Data Fields")]
 
-            [SerializeField] private Item itemData;
+            [SerializeField] private ItemPrototype itemData;
             [SerializeField] private int quantity;
 
         #endregion
@@ -52,7 +52,7 @@ namespace Loot
         {
             try
             {
-                ItemSaveData itemToSave = new ItemSaveData(itemData, quantity, new Vector2Int(0, 0));
+                Item itemToSave = new Item(itemData, quantity);
                 inventoryController.AddItem(itemToSave);
                 lootWindowController.RemoveLootItem(itemToSave);
                 Destroy(this.gameObject);
@@ -62,9 +62,9 @@ namespace Loot
                 throw;
             }
         }
-        public void LoadLoot(ItemSaveData itemToLoad)
+        public void LoadLoot(Item itemToLoad)
         {
-            itemData = Resources.Load<Item>("Items/" + itemToLoad.name); // TODO - Replace with AssetBundle or other solution
+            itemData = Resources.Load<ItemPrototype>("Items/" + itemToLoad.Name); // TODO - Replace with AssetBundle or other solution
             quantity = itemToLoad.Quantity;
             InitializeBlerb();
         }
