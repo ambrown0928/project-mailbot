@@ -7,51 +7,49 @@ using UnityEngine;
 
 namespace Tasks.UI
 {
+    /// 
+    /// Controls the UI representation of tasks. Stores tasks 
+    /// in a JSON file to load and 
+    /// 
     public class TaskWindowController : MonoBehaviour
     {
-        private const string FILE_PATH = "/Tasks/task-log.json";
-
         [SerializeField] private GameObject taskBlerbPrefab;
         [SerializeField] private GameObject taskContainer;
-        [SerializeField] private TaskPanelController taskPanelController;
+        public TaskPanelController taskPanelController;
         [SerializeField] private WindowController windowController;
 
-        private List<TaskGraph> tasks;
-        private bool showCompleted;
+        private bool showCompleted; // toggle for showing completed tasks vs uncompleted tasks
 
         void Awake()
         {
             try
             {
-                tasks = LoadTaskList();
+                TaskController.tasks = TaskController.LoadTaskList();
             }
             catch(Exception e)
             {
                 Debug.LogError(e);
-                tasks = new List<TaskGraph>();
-                SaveTaskList();
+                TaskController.tasks = new List<TaskGraph>();
+                TaskController.SaveTaskList();
             }
             windowController.Close();
         }
 
         public void AddTask(TaskGraph task)
         {
-            // check in log and update
-            if(task.inLog) return;
-            task.inLog = true;
-
-            // actually add to log (data and literal)
-            tasks.Add(task);
+            if(!TaskController.AddToLog(task)) return; 
             CreateBlerb(task);
 
-            SaveTaskList();
+            TaskController.SaveTaskList();
         }
         private void CreateBlerb(TaskGraph task)
         {
+            // create game object
             GameObject newBlerb = Instantiate(taskBlerbPrefab);
             newBlerb.transform.SetParent(taskContainer.transform, false);
             newBlerb.transform.SetAsFirstSibling();
 
+            // initialize task data
             TaskBlerbController newBlerbController = newBlerb.GetComponent<TaskBlerbController>();
             newBlerbController.InitializeBlerb(this, task);
         }
@@ -59,14 +57,14 @@ namespace Tasks.UI
         {
             ResetList();
             TaskGraph lastTask = null;
-            foreach(TaskGraph task in tasks)
+            foreach(TaskGraph task in TaskController.tasks)
             {
                 if(task == null || task.completed != showCompleted) continue;
                 CreateBlerb(task);
                 lastTask = task;
             }
             if(lastTask == null) return;
-            // taskPanelController.HighlightedTask = lastTask;
+            taskPanelController.HighlightTask(lastTask);
         }
         private void ResetList()
         {
@@ -74,37 +72,28 @@ namespace Tasks.UI
         }
 
         public bool GetShowCompleted()
-        {
+        { // called by TaskCompletedSwitch.cs
             return showCompleted;
         }
         public void ToggleShowComplete()
-        {
+        { // called by the 'In progress' and 'Completed' buttons in unity inspector
             showCompleted = !showCompleted;
+            InitializeList();
         }
 
-        private void SaveTaskList()
+        public void OpenWindow()
         {
-            List<TaskJson> saveList = new List<TaskJson>();
-
-            foreach(TaskGraph task in tasks) saveList.Add(new TaskJson(task.name, task.currentNode));
-            
-
-            SaveLoad<List<TaskJson>>.SaveToJson(saveList, FILE_PATH);
+            windowController.Open();
+            InitializeList();
         }
-        private List<TaskGraph> LoadTaskList()
+        public void CloseWindow()
         {
-            List<TaskJson> loadList = SaveLoad<List<TaskJson>>.LoadFromJson(FILE_PATH);
-            List<TaskGraph> returnList = new List<TaskGraph>();
-
-            foreach(TaskJson taskJson in loadList)
-            {
-                returnList.Add( Resources.Load<TaskGraph>("Tasks/" + taskJson.name) );
-            }
-            return returnList;
+            windowController.Close();
         }
+        
         private void OnApplicationQuit() 
         {
-            SaveTaskList();
+            TaskController.SaveTaskList();
         }
     }
     

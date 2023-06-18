@@ -7,13 +7,18 @@ using UnityEngine;
 
 namespace Tasks
 {
+    /// 
+    /// Class used to store and interact with a task's goal. 
+    /// 
     [System.Serializable]
     public class TaskGoal
     {
         public string target; // item to deliver
         public int requiredAmount;
-        public GoalType goalType;
         public int currentAmount;
+
+        public GoalType goalType;
+        
         public string acceptText;
         public string hiddenText;
         

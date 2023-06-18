@@ -6,6 +6,7 @@ using float_oat.Desktop90;
 using UnityEngine;
 using UnityEngine.UI;
 using XNode;
+using GlobalNodes;
 
 namespace Dialog
 {
@@ -18,15 +19,15 @@ namespace Dialog
         [SerializeField] private Text dialogText;
         private DialogSegment _activeSegment;
 
-        public List<DialogSegment> NextSegments 
+        public List<Node> NextSegments 
         { 
             get  
             {
-                List<DialogSegment> nextSegments = new List<DialogSegment>();
+                List<Node> nextSegments = new List<Node>();
                 foreach(NodePort port in _activeSegment.DynamicOutputs)
                 {
                     if(!port.IsConnected) { nextSegments.Add(default(DialogSegment)); break;}
-                    nextSegments.Add(port.Connection.node as DialogSegment);
+                    nextSegments.Add(port.Connection.node);
                 }
                 return nextSegments;
             } 
@@ -50,25 +51,32 @@ namespace Dialog
         }
         private void ResetDialogGraph()
         {
-            foreach(DialogSegment node in dialogGraph.nodes) node.visited = false;
+            foreach(Node node in dialogGraph.nodes) if(node is DialogSegment) (node as DialogSegment).visited = false;
+            
         }
         private void GetFirstNode()
         {
             foreach(DialogSegment node in dialogGraph.nodes) 
                 if(!node.GetInputPort("input").IsConnected) { UpdateDialog(node); break; }
         }
-        private void UpdateDialog(DialogSegment newSegment)
+        private void UpdateDialog(Node newSegment)
         {
+            if(newSegment is GiveTaskSegment) 
+            {
+                GiveTask(newSegment as GiveTaskSegment);
+                return;   
+            }
+
             if(globalContainerUI.AnswerWindowController.isActive()) 
                 globalContainerUI.AnswerWindowController.CollapseWindow();
 
-            _activeSegment = newSegment;
+            _activeSegment = newSegment as DialogSegment;
             _activeSegment.visited = true;
 
             switch(_activeSegment)
             {
-                case RecieveTaskSegment:
-                    RecieveTask();
+                case ReceiveTaskSegment:
+                    ReceiveTask();
                     break;
                 case DialogSegment :
                     StartCoroutine(LoadDialog(_activeSegment.DialogText));
@@ -76,11 +84,16 @@ namespace Dialog
             }
         }
 
-        private void RecieveTask()
+        private void GiveTask(GiveTaskSegment giveTaskSegment)
         {
-            RecieveTaskSegment _currentSegment = _activeSegment as RecieveTaskSegment;
+            UpdateDialog( giveTaskSegment.AttemptToAddToLog() );
+        }
 
-            _currentSegment.AttemptProgressTask(dialogName.name, globalContainerUI.InventoryController);
+        private void ReceiveTask()
+        {
+            ReceiveTaskSegment _currentSegment = _activeSegment as ReceiveTaskSegment;
+
+            _currentSegment.AttemptProgressTask(globalContainerUI.InventoryController);
             StartCoroutine( LoadDialog( _currentSegment.CheckIfTaskIsCompleteAndReturnDialogResult() ) );
         }
 
@@ -114,7 +127,7 @@ namespace Dialog
             this.answerIndex = answerIndex;
             NodePort port = _activeSegment.GetPort("Answers " + answerIndex);
             
-            if(port.IsConnected) UpdateDialog(port.Connection.node as DialogSegment);
+            if(port.IsConnected) UpdateDialog(port.Connection.node);
             else CloseWindow();
         }
 

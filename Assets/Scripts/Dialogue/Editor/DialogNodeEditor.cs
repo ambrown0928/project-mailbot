@@ -17,6 +17,7 @@ namespace Dialog.Editor
             serializedObject.Update();
 
             DialogSegment currentSegment = serializedObject.targetObject as DialogSegment;
+            
             NodeEditorGUILayout.PortField(currentSegment.GetPort("input"));
 
             GUILayout.Label("Dialog Text");
@@ -66,14 +67,14 @@ namespace Dialog.Editor
             };
         }
     }
-    [CustomNodeEditor(typeof(RecieveTaskSegment))]
-    public class RecieveTaskNodeEditor : DialogNodeEditor
+    [CustomNodeEditor(typeof(ReceiveTaskSegment))]
+    public class ReceiveTaskNodeEditor : DialogNodeEditor
     {
         public override void OnBodyGUI()
         {
             serializedObject.Update();
 
-            RecieveTaskSegment currentSegment = serializedObject.targetObject as RecieveTaskSegment;
+            ReceiveTaskSegment currentSegment = serializedObject.targetObject as ReceiveTaskSegment;
             NodeEditorGUILayout.PortField(currentSegment.GetPort("input"));
             GUILayout.Label("Task");
             currentSegment.task = EditorGUILayout.ObjectField(currentSegment.task, typeof(TaskSegment), false) as TaskSegment;
