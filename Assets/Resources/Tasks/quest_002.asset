@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c13f6504a19cba24ea69d48ae3e415ae, type: 3}
+  m_Name: quest_002
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: 6142575441406380398}
+  currentNode: 0
+  inLog: 0
+  completed: 0
+--- !u!114 &6142575441406380398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d50a4ae228b7ccb42a8c523ed766166d, type: 3}
+  m_Name: A secret, third thing
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1208, y: -104}
+  ports:
+    keys:
+    - input
+    - CompletionPaths
+    - CompletionPaths 0
+    values:
+    - _fieldName: input
+      _node: {fileID: 6142575441406380398}
+      _typeQualifiedName: Tasks.Connection, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: CompletionPaths
+      _node: {fileID: 6142575441406380398}
+      _typeQualifiedName: System.Collections.Generic.List`1[[Tasks.TaskGoal, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]], mscorlib, Version=4.0.0.0,
+        Culture=neutral, PublicKeyToken=b77a5c561934e089
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: CompletionPaths 0
+      _node: {fileID: 6142575441406380398}
+      _typeQualifiedName: Tasks.TaskGoal, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 1
+  id: 0
+  description: This is a secret third thing
+  completed: 0
+  CompletionPaths:
+  - target: 
+    requiredAmount: 1
+    currentAmount: 0
+    goalType: 1
+    acceptText: Good job
+    hiddenText: 

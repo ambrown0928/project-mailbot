@@ -4,15 +4,19 @@ using UnityEngine;
 
 namespace Tasks
 {
+    /// 
+    /// For saving task in task log. Saves the name and 
+    /// the current segment of the task so reloading is easier
+    /// 
     public class TaskJson
     {
         public string name;
-        public int currentSegment;
+        public bool selected;
 
-        public TaskJson(string name, int currentSegment)
+        public TaskJson(string name, bool selected)
         {
             this.name = name;
-            this.currentSegment = currentSegment;
+            this.selected = selected;
         }
     }
 }

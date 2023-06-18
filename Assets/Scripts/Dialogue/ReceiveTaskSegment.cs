@@ -8,16 +8,20 @@ using XNode;
 
 namespace Dialog
 {
-    public class RecieveTaskSegment : DialogSegment
+    /// Derived from DialogSegment. Node for receiving 
+    public class ReceiveTaskSegment : DialogSegment
     {
         public TaskSegment task;
-        public string rejectText;
+        public string rejectText; // text for when task is rejected
 
         public override object GetValue(NodePort port) => null;
         
-        public void AttemptProgressTask(string npc, InventoryController inventoryController)
+        /// 
+        /// Attempt to progress all possible goals for a task segment.
+        /// 
+        public void AttemptProgressTask(InventoryController inventoryController)
         {
-            foreach(TaskGoal goal in task.CompletionPaths) TaskController.AttemptProgress(npc, inventoryController, goal);
+            foreach(TaskGoal goal in task.CompletionPaths) TaskController.AttemptProgress(inventoryController, goal);
         }
         
         public string CheckIfTaskIsCompleteAndReturnDialogResult()

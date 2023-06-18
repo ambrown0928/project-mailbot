@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using float_oat.Desktop90;
 using Inventory;
+using Tasks.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -66,24 +67,28 @@ namespace Player.States
 
     public class TaskLogState : ExtraState
     {
-        private WindowController taskLogController;
+        private TaskWindowController taskWindowController;
     
         public override void Enter () { }
         public override void Exit () 
         {
-            taskLogController.Close();
-            taskLogController = null;
+            taskWindowController.CloseWindow();
+            taskWindowController = null;
         }
         
         public override void Action (Rigidbody body, GameObject taskWindow)
         {
             body.velocity = new Vector3(0f, body.velocity.y, 0f);
-            if(PlayerHasNotOpenedTaskLog()) taskWindow.GetComponent<WindowController>().Open();
+            if(PlayerHasNotOpenedTaskLog()) 
+            {
+                taskWindowController = taskWindow.GetComponent<TaskWindowController>();
+                taskWindowController.OpenWindow();
+            }
         }
     
         private bool PlayerHasNotOpenedTaskLog()
         {
-            return taskLogController == null;
+            return taskWindowController == null;
         }
     }
 

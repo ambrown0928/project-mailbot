@@ -21,10 +21,11 @@ namespace Tasks.UI
         }
         private void Update() 
         {
-            GetComponent<D90Button>().interactable = false;
+            GetComponent<D90Button>().interactable = (taskWindowController.taskPanelController.currentTask == task) ? false : true;
         }
         public void OnClick()
         {
+            taskWindowController.taskPanelController.HighlightTask(task);
         }
         
     }

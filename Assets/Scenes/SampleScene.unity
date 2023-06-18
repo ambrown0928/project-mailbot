@@ -355,7 +355,7 @@ PrefabInstance:
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 7464759929458064244}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -366,7 +366,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: Tasks.UI.TaskLogController, Assembly-CSharp
+      value: Tasks.UI.TaskWindowController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -638,7 +638,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8344860784848166659}
         m_TargetAssemblyTypeName: Tasks.UI.TaskPanelController, Assembly-CSharp
-        m_MethodName: DecreaseLocalCurrentTask
+        m_MethodName: GoToPreviousNode
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -919,7 +919,7 @@ PrefabInstance:
     - target: {fileID: 1512923838316984516, guid: 134a244b3e93b4ff4b405ce8d4a4ab5c, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1035074937}
+      objectReference: {fileID: 0}
     - target: {fileID: 1512923838316984516, guid: 134a244b3e93b4ff4b405ce8d4a4ab5c, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: GiveTask
@@ -2678,7 +2678,7 @@ PrefabInstance:
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 7464759929458064244}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -2689,7 +2689,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: Tasks.UI.TaskLogController, Assembly-CSharp
+      value: Tasks.UI.TaskWindowController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2456874633013211138, guid: e25be3b2d2f2b4544ab2be01bac7be16, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
@@ -3349,28 +3349,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4855193289971172, guid: 2e23bb932cf4ec7498eb4b727d9113fa, type: 3}
   m_PrefabInstance: {fileID: 1012629414}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1035074934 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 587364281884310319, guid: 134a244b3e93b4ff4b405ce8d4a4ab5c, type: 3}
-  m_PrefabInstance: {fileID: 240745313}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1035074935 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 587364281884310316, guid: 134a244b3e93b4ff4b405ce8d4a4ab5c, type: 3}
   m_PrefabInstance: {fileID: 240745313}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1035074937
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1035074934}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9788695e8d53e1445be2ebccd83d1066, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1040608343
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3719,7 +3702,7 @@ MonoBehaviour:
   model: {fileID: 456041424}
   corpse: {fileID: 3918046154354586755, guid: e7073af446752b3419b1dd000ff3821b, type: 3}
   inventoryWindow: {fileID: 2122005778}
-  taskWindow: {fileID: 7464759930227093955}
+  taskWindow: {fileID: 7464759929458064240}
   dialogWindow: {fileID: 6627395585354823760}
   length: 1.25
   traversalLength: 5
@@ -10411,7 +10394,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8344860784848166659}
         m_TargetAssemblyTypeName: Tasks.UI.TaskPanelController, Assembly-CSharp
-        m_MethodName: IncreaseLocalCurrentTask
+        m_MethodName: GoToNextNode
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
