@@ -56,6 +56,7 @@ MonoBehaviour:
       _dynamic: 1
   visited: 1
   DialogText: This is answer 1.
+  npcSound: {fileID: 8300000, guid: 3b8fb83487e3fd04bb9bfd1310986aff, type: 3}
   Answers:
   - End Dialog
 --- !u!114 &-7793224662722396203
@@ -71,7 +72,7 @@ MonoBehaviour:
   m_Name: Receive Task Segment
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 544.1191, y: 425.9336}
+  position: {x: 552, y: 328}
   ports:
     keys:
     - input
@@ -114,6 +115,7 @@ MonoBehaviour:
       _dynamic: 1
   visited: 0
   DialogText: 
+  npcSound: {fileID: 8300000, guid: 3b8fb83487e3fd04bb9bfd1310986aff, type: 3}
   Answers:
   - Return
   task: {fileID: -1052186298946479214, guid: d93d76fa277e6794ab86d249ec65c79d, type: 2}
@@ -190,6 +192,7 @@ MonoBehaviour:
       _dynamic: 1
   visited: 1
   DialogText: This is answer 2
+  npcSound: {fileID: 8300000, guid: 3b8fb83487e3fd04bb9bfd1310986aff, type: 3}
   Answers:
   - Answer 1
   - Give Delivery
@@ -347,6 +350,7 @@ MonoBehaviour:
       _dynamic: 1
   visited: 1
   DialogText: Hello, this is a test
+  npcSound: {fileID: 8300000, guid: 3b8fb83487e3fd04bb9bfd1310986aff, type: 3}
   Answers:
   - Answer 1
   - Answer 2

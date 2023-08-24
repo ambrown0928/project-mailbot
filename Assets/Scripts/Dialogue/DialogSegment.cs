@@ -11,8 +11,10 @@ namespace Dialog
     {
         [Input] public Connection input;
         
+
         public bool visited;
         public string DialogText;
+        public AudioClip npcSound;
         
         [Output(dynamicPortList = true)] public List<string> Answers;
 

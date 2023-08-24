@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using float_oat.Desktop90;
 using UnityEngine;
 using UnityEngine.UI;
-using Tasks;
 
 namespace Respawn
 {
@@ -13,8 +12,7 @@ namespace Respawn
         [SerializeField] private RectTransform canvas;
         [SerializeField] private WindowController respawnWindow;
 
-        
-        public RespawnData Data { get => data; set => data = value; }
+        public RespawnData Data { get => data; }
     
         public void OpenRespawnWindow()
         {

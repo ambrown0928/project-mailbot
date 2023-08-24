@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Battery;
 using Dialog;
 using Dialog.Answer;
 using Inventory;
@@ -20,6 +21,7 @@ namespace System.UI
         [SerializeField] private SingleItemPanelController singleItemPanelController;
         [SerializeField] private LootWindowController lootWindowController;
         [SerializeField] private QuantityWindowController quantityWindowController;
+        [SerializeField] private BatteryController batteryController;
         [Header("Tasks and Dialog")]
         [SerializeField] private TaskWindowController taskWindowController;
         [SerializeField] private DialogWindowController dialogWindowController;
@@ -29,9 +31,12 @@ namespace System.UI
         public SingleItemPanelController SingleItemPanelController { get => singleItemPanelController; }
         public LootWindowController LootWindowController { get => lootWindowController; }
         public QuantityWindowController QuantityWindowController { get => quantityWindowController; }
+        public BatteryController BatteryController { get => BatteryController;}
         public TaskWindowController TaskWindowController { get => taskWindowController; }
         public DialogWindowController DialogWindowController { get => dialogWindowController; }
         public AnswerWindowController AnswerWindowController { get => answerWindowController; }
+
+        void Update() => batteryController.BatteryUpdate();
     }
     
 }

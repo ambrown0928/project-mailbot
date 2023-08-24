@@ -19,6 +19,7 @@ namespace Player
         private Collider coll; // used for determining ground
         private StateController stateController;
         private RespawnPointController currentController;
+        private PlayerRespawnController playerRespawnController;
         private PlayerInput playerInput;
         private Coroutine dashCoroutine;
         private Coroutine respawnCoroutine;
@@ -75,11 +76,6 @@ namespace Player
             private float lastHitDistance;
         #endregion
 
-        #region Respawn Variables
-            [SerializeField] private RespawnData respawnData;
-            [SerializeField] private float respawnTime;
-        #endregion
-
         #region Unity Functions
         void Awake()
         {
@@ -122,10 +118,11 @@ namespace Player
         {
             if(InventoryIsOpen() || TaskLogIsOpen() || PlayerIsInDialogState()) return;
 
-            // skip when dashing so player's dash is in the same direction as it is based off model.transform.forward
+            // skip when dashing so player's dash is in the same direction as model.transform.forward
             if ( IsMoving() &&
                  !stateController.PlayerIsInState(typeof(DashingState)) )
             {
+                // take the player's movement direction and rotate the model towards it 
                 Vector3 moveDir = transform.forward * move.y +
                                 transform.right * move.x;
                 moveDir.Normalize();
@@ -183,17 +180,14 @@ namespace Player
             if(ObjectCollidedHasRespawnTag(other.tag))
             {
                 currentController = other.GetComponentInParent<RespawnPointController>();
-                respawnData = currentController.Data;
             }
         }
         private void OnTriggerExit(Collider other) 
         {
             if(ObjectCollidedHasRespawnTag(other.tag))
             {
-                if(currentController.IsOpen())
-                {
-                    currentController.CloseRespawnWindow();
-                }
+                if(currentController.IsOpen()) currentController.CloseRespawnWindow();
+                
                 currentController = null;
             }    
         }
@@ -258,9 +252,9 @@ namespace Player
             model.SetActive(false);
             body.useGravity = false;
             stateController.RunCurrentState(corpse);
-            yield return new WaitForSecondsRealtime(respawnTime);
+            yield return new WaitForSecondsRealtime(playerRespawnController.RespawnTime);
 
-            body.MovePosition(respawnData.points);
+            body.MovePosition(playerRespawnController.RespawnData.points);
             model.SetActive(true);
             body.useGravity = true;
             stateController.SetState(idleState);
@@ -438,7 +432,7 @@ namespace Player
         }
         private bool IsMoving()
         {
-            return (Mathf.Abs(move.magnitude) != 0);
+            return Mathf.Abs(move.magnitude) != 0;
         }
         private bool PlayerIsDashing()
         {

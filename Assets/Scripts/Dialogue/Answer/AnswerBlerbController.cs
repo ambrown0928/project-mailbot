@@ -18,7 +18,7 @@ namespace Dialog.Answer
 
         public void InitializeBlerb(string answer, int index, Node nextSegment, Action<int> answerClicked)
         {
-            if (CheckReceiveSegmentValid(nextSegment))
+            if (CheckReceiveSegmentInvalid(nextSegment))
                 Destroy(this.gameObject);
 
             answerField.text = answer;
@@ -36,16 +36,15 @@ namespace Dialog.Answer
 
             NodePort port = (nextSegment.GetOutputPort("Answers 0"));
             if(port == null)
-            {
                 return;
-            }
+            
             if( port.IsConnected &&
                 port.Connection.node is GiveTaskSegment &&
                 (port.Connection.node as GiveTaskSegment).task.inLog)
                 Destroy(this.gameObject);
         }
 
-        private static bool CheckReceiveSegmentValid(Node nextSegment)
+        private static bool CheckReceiveSegmentInvalid(Node nextSegment)
         { // we want to stop showing the button if the task isn't available, or the task is completed
             return  nextSegment != null &&
                     nextSegment is ReceiveTaskSegment &&

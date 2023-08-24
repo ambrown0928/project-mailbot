@@ -26,6 +26,9 @@ namespace Dialog.Editor
                 GUILayout.MinHeight(50),
             });
 
+            GUILayout.Label("NPC Sound");
+            currentSegment.npcSound = (AudioClip)EditorGUILayout.ObjectField(currentSegment.npcSound, typeof(AudioClip), false);
+
             NodeEditorGUILayout.DynamicPortList(
                 "Answers",
                 typeof(string),
@@ -84,6 +87,9 @@ namespace Dialog.Editor
             {
                 GUILayout.MinHeight(50),
             });
+
+            GUILayout.Label("NPC Sound");
+            currentSegment.npcSound = (AudioClip)EditorGUILayout.ObjectField(currentSegment.npcSound, typeof(AudioClip), false);
 
             NodeEditorGUILayout.DynamicPortList(
                 "Answers",

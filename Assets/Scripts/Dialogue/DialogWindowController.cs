@@ -34,12 +34,17 @@ namespace Dialog
         }
 
         [Header("Timing")]
-        [SerializeField] private float dialogSpeed;
-        [SerializeField] private float answerWaitTime;
+        [SerializeField] private float dialogSpeed; // todo - add to options menu
+        [SerializeField] private float answerWaitTime; // todo - add to options menu
 
         [Header("Controllers")]
         [SerializeField] private WindowController windowController;
         [SerializeField] private UIControllerGlobalContainer globalContainerUI;
+
+        [Header("Audio")]
+        private new AudioSource audio;
+        [SerializeField] private float minPitch;
+        [SerializeField] private float maxPitch;
 
         private bool skipLoading;
         private int answerIndex = -1;
@@ -48,6 +53,7 @@ namespace Dialog
         void Awake()
         {
             windowController.Close();
+            audio = GetComponent<AudioSource>();
         }
         private void ResetDialogGraph()
         {
@@ -79,7 +85,7 @@ namespace Dialog
                     ReceiveTask();
                     break;
                 case DialogSegment :
-                    StartCoroutine(LoadDialog(_activeSegment.DialogText));
+                    StartCoroutine(LoadDialog(_activeSegment.DialogText, _activeSegment.npcSound));
                     break;
             }
         }
@@ -94,17 +100,21 @@ namespace Dialog
             ReceiveTaskSegment _currentSegment = _activeSegment as ReceiveTaskSegment;
 
             _currentSegment.AttemptProgressTask(globalContainerUI.InventoryController);
-            StartCoroutine( LoadDialog( _currentSegment.CheckIfTaskIsCompleteAndReturnDialogResult() ) );
+            StartCoroutine( LoadDialog( _currentSegment.CheckIfTaskIsCompleteAndReturnDialogResult(), _currentSegment.npcSound ) );
         }
 
-        private IEnumerator LoadDialog(string sentence)
+        private IEnumerator LoadDialog(string sentence, AudioClip clip)
         {
+            // initialize text and answer index
             answerIndex = -1;
             skipLoading = false;
             dialogText.text = "";
+            // initialize audio
+            audio.clip = clip;
+            audio.mute = false;
 
             for(int i = 0; i < sentence.Length; i++)
-            {
+            { // loop through all letters at dialog speed to create a speed effect
                 if(skipLoading) // skip loading text
                 {
                     dialogText.text += sentence.Substring(i);
@@ -112,12 +122,15 @@ namespace Dialog
                 }
 
                 dialogText.text += sentence[i];
+                audio.pitch = UnityEngine.Random.Range(minPitch, maxPitch);
+                audio.Play();
                 yield return new WaitForSeconds(dialogSpeed);
             }
+            
+            audio.mute = true;
             yield return new WaitForSeconds(answerWaitTime);
             GenerateAnswers();
         }
-
         private void GenerateAnswers()
         {
             globalContainerUI.AnswerWindowController.OpenAnswerWindow(_activeSegment.Answers, AnswerClicked);
